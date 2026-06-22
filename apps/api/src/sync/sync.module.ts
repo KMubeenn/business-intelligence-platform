@@ -5,7 +5,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
-  imports: [ConnectorsModule, PrismaModule, ScheduleModule.forRoot()],
+  imports: [ConnectorsModule, PrismaModule],
   providers: [SyncService],
 })
 export class SyncModule {}

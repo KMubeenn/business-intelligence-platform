@@ -59,7 +59,7 @@ model DataSource {
 model RawTable {
   id                String       @id @default(uuid())
   dataSourceId      String
-  dataSource        DataSource   @relation(fields: [dataSourceId], references: [id])
+  dataSource        DataSource   @relation(fields: [dataSourceId], references: [id], onDelete: Cascade)
   tableName         String
   syncEnabled       Boolean      @default(true)
   incrementalColumn String?
@@ -75,7 +75,7 @@ model RawTable {
 model RawRecord {
   id              String           @id @default(uuid())
   rawTableId      String
-  rawTable        RawTable         @relation(fields: [rawTableId], references: [id])
+  rawTable        RawTable         @relation(fields: [rawTableId], references: [id], onDelete: Cascade)
   data            Json
   createdAt       DateTime         @default(now())
   canonicalRecord CanonicalRecord?
@@ -97,9 +97,9 @@ model CanonicalModel {
 model FieldMapping {
   id               String         @id @default(uuid())
   canonicalModelId String
-  canonicalModel   CanonicalModel @relation(fields: [canonicalModelId], references: [id])
+  canonicalModel   CanonicalModel @relation(fields: [canonicalModelId], references: [id], onDelete: Cascade)
   rawTableId       String
-  rawTable         RawTable       @relation(fields: [rawTableId], references: [id])
+  rawTable         RawTable       @relation(fields: [rawTableId], references: [id], onDelete: Cascade)
   mappingRules     Json
   createdAt        DateTime       @default(now())
 
@@ -115,9 +115,9 @@ enum CanonicalRecordStatus {
 model CanonicalRecord {
   id               String                @id @default(uuid())
   canonicalModelId String
-  canonicalModel   CanonicalModel        @relation(fields: [canonicalModelId], references: [id])
+  canonicalModel   CanonicalModel        @relation(fields: [canonicalModelId], references: [id], onDelete: Cascade)
   rawRecordId      String                @unique
-  rawRecord        RawRecord             @relation(fields: [rawRecordId], references: [id])
+  rawRecord        RawRecord             @relation(fields: [rawRecordId], references: [id], onDelete: Cascade)
   data             Json
   status           CanonicalRecordStatus @default(MAPPED)
   createdAt        DateTime              @default(now())

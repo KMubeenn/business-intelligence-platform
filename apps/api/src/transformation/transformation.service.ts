@@ -8,7 +8,7 @@ export class TransformationService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  @Cron("*/5 * * * * *")
   async handleTransformation() {
     this.logger.log('Starting transformation sweep...');
 
@@ -28,7 +28,7 @@ export class TransformationService {
           },
         },
       },
-      take: 100, // Process in batches
+      take: 2000, // Process in large batches
     });
 
     if (unmappedRecords.length === 0) {
