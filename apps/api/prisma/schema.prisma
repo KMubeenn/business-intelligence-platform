@@ -33,6 +33,7 @@ enum DataSourceType {
   MYSQL
   POSTGRESQL
   SHOPIFY
+  REST_API
 }
 
 enum DataSourceStatus {

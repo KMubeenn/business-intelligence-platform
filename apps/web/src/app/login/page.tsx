@@ -40,22 +40,22 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2 bg-white">
+    <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2 bg-background">
       {/* LEFT SIDE - BRANDING */}
-      <div className="hidden bg-zinc-950 lg:flex flex-col justify-between p-10 text-white">
+      <div className="hidden bg-card border-r border-border lg:flex flex-col justify-between p-10 text-foreground">
         <div className="flex items-center gap-2 font-bold text-xl">
-          <Package2 className="h-6 w-6" />
+          <Package2 className="h-6 w-6 text-primary" />
           SaaS Foundation
         </div>
         <div>
           <h1 className="text-4xl font-bold tracking-tight mb-4">
             The modern standard for business intelligence.
           </h1>
-          <p className="text-zinc-400 max-w-md text-lg">
-            Connect your databases, build custom data models, and visualize your entire company's operations in one place.
+          <p className="text-muted-foreground max-w-md text-lg">
+            Connect your databases, build custom data models, and visualize your entire company&apos;s operations in one place.
           </p>
         </div>
-        <div className="text-sm text-zinc-500">
+        <div className="text-sm text-muted-foreground">
           © {new Date().getFullYear()} SaaS Foundation Inc. All rights reserved.
         </div>
       </div>
@@ -64,15 +64,15 @@ export default function LoginForm() {
       <div className="flex items-center justify-center py-12">
         <div className="mx-auto grid w-[350px] gap-6">
           <div className="grid gap-2 text-center lg:text-left">
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-950">Welcome back</h1>
-            <p className="text-balance text-zinc-500">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Welcome back</h1>
+            <p className="text-balance text-muted-foreground">
               Enter your email to sign in to your account
             </p>
           </div>
           <form onSubmit={handleSubmit} className="grid gap-4">
-            {error && <div className="text-sm text-red-500 font-medium">{error}</div>}
+            {error && <div className="text-sm text-destructive font-medium">{error}</div>}
             <div className="grid gap-2">
-              <Label htmlFor="email" className="text-zinc-950 font-medium">Email</Label>
+              <Label htmlFor="email" className="text-foreground font-medium">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -80,12 +80,12 @@ export default function LoginForm() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="bg-white border-zinc-200 focus-visible:ring-zinc-950 rounded-md"
+                className="bg-background border-input focus-visible:ring-ring rounded-md"
               />
             </div>
             <div className="grid gap-2">
               <div className="flex items-center">
-                <Label htmlFor="password" className="text-zinc-950 font-medium">Password</Label>
+                <Label htmlFor="password" className="text-foreground font-medium">Password</Label>
               </div>
               <Input 
                 id="password" 
@@ -93,16 +93,16 @@ export default function LoginForm() {
                 required 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="bg-white border-zinc-200 focus-visible:ring-zinc-950 rounded-md"
+                className="bg-background border-input focus-visible:ring-ring rounded-md"
               />
             </div>
-            <Button type="submit" className="w-full bg-zinc-950 text-white hover:bg-zinc-800 rounded-md py-6 mt-2">
+            <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-md py-6 mt-2">
               Sign in
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm text-zinc-500">
+          <div className="mt-4 text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
-            <Link href="/register" className="underline font-medium text-zinc-950">
+            <Link href="/register" className="underline font-medium text-foreground">
               Sign up
             </Link>
           </div>

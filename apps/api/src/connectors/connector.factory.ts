@@ -4,6 +4,7 @@ import { BaseConnector } from './base.connector';
 import { MySQLConnector } from './implementations/mysql.connector';
 import { PostgreSQLConnector } from './implementations/postgresql.connector';
 import { ShopifyConnector } from './implementations/shopify.connector';
+import { RestApiConnector } from './implementations/rest-api.connector';
 
 @Injectable()
 export class ConnectorFactory {
@@ -15,6 +16,8 @@ export class ConnectorFactory {
         return new PostgreSQLConnector(config);
       case 'SHOPIFY':
         return new ShopifyConnector(config);
+      case 'REST_API':
+        return new RestApiConnector(config);
       default:
         throw new BadRequestException(
           `Connector for type ${String(type)} is not implemented`,

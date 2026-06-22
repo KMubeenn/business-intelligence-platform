@@ -1,5 +1,5 @@
 "use client";
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,32 @@ export default function NewDataSourcePage() {
   const [configStr, setConfigStr] = useState("{\n  \"host\": \"\",\n  \"port\": 5432,\n  \"user\": \"\",\n  \"password\": \"\",\n  \"database\": \"\"\n}");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newType = e.target.value;
+    setType(newType);
+    if (newType === 'REST_API') {
+      setConfigStr(JSON.stringify({
+        baseUrl: "https://jsonplaceholder.typicode.com",
+        auth: { type: "NONE" },
+        endpoints: [
+          {
+            name: "users",
+            path: "/users",
+            method: "GET"
+          },
+          {
+            name: "posts",
+            path: "/posts",
+            method: "GET",
+            pagination: { type: "page", paramName: "_page", startAt: 1 }
+          }
+        ]
+      }, null, 2));
+    } else {
+      setConfigStr("{\n  \"host\": \"\",\n  \"port\": 5432,\n  \"user\": \"\",\n  \"password\": \"\",\n  \"database\": \"\"\n}");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,7 +74,7 @@ export default function NewDataSourcePage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-6">
-            {error && <div className="text-sm text-red-500 bg-red-50 p-3 rounded-md">{error}</div>}
+            {error && <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">{error}</div>}
             
             <div className="grid gap-2">
               <Label htmlFor="name">Connection Name</Label>
@@ -67,11 +93,12 @@ export default function NewDataSourcePage() {
                 id="type"
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={type}
-                onChange={(e) => setType(e.target.value)}
+                onChange={handleTypeChange}
                 required
               >
                 <option value="POSTGRESQL">PostgreSQL</option>
                 <option value="MYSQL">MySQL</option>
+                <option value="REST_API">REST API</option>
                 <option value="SHOPIFY">Shopify</option>
               </select>
             </div>

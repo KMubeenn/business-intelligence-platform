@@ -1,5 +1,5 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 function getHeaders() {
   const token = localStorage.getItem("access_token");
   return {

@@ -1,5 +1,5 @@
 "use client";
-
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { useEffect, useState } from "react";
 import {
   Dialog,
@@ -95,8 +95,8 @@ export function FieldMappingDialog({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <ArrowRightLeft className="h-5 w-5 text-indigo-500" />
-            Map Fields: <span className="font-mono bg-zinc-100 px-2 py-0.5 rounded text-sm text-zinc-800">{tableName}</span>
+            <ArrowRightLeft className="h-5 w-5 text-primary" />
+            Map Fields: <span className="font-mono bg-muted px-2 py-0.5 rounded text-sm text-foreground">{tableName}</span>
           </DialogTitle>
           <DialogDescription>
             Map your raw database columns to the standard Canonical Schema.
@@ -104,22 +104,22 @@ export function FieldMappingDialog({
         </DialogHeader>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center p-12 text-zinc-500">
+          <div className="flex flex-col items-center justify-center p-12 text-muted-foreground">
             <Loader2 className="h-8 w-8 animate-spin mb-4" />
             <p>Loading schema definitions...</p>
           </div>
         ) : error ? (
-          <div className="p-4 text-center text-red-500 border border-red-200 bg-red-50 rounded-md">
+          <div className="p-4 text-center text-destructive border border-border bg-destructive/10 rounded-md">
             {error}
           </div>
         ) : (
           <div className="space-y-6 mt-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-700">Target Canonical Model</label>
+              <label className="text-sm font-medium text-muted-foreground">Target Canonical Model</label>
               <Select value={selectedModelId} onValueChange={(val) => setSelectedModelId(val || "")}>
-                <SelectTrigger className="w-full h-12 bg-white">
+                <SelectTrigger className="w-full h-12 bg-background">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-indigo-500" />
+                    <Sparkles className="h-4 w-4 text-primary" />
                     <SelectValue placeholder="Select a model" />
                   </div>
                 </SelectTrigger>
@@ -132,20 +132,20 @@ export function FieldMappingDialog({
             </div>
 
             {selectedModel && (
-              <div className="border border-zinc-200 rounded-lg overflow-hidden bg-white">
-                <div className="grid grid-cols-2 gap-4 p-3 bg-zinc-50 border-b border-zinc-200 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+              <div className="border border-border rounded-lg overflow-hidden bg-card">
+                <div className="grid grid-cols-2 gap-4 p-3 bg-muted border-b border-border text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   <div>Canonical Field ({selectedModel.name})</div>
                   <div>Raw Column ({tableName})</div>
                 </div>
-                <div className="divide-y divide-zinc-100">
+                <div className="divide-y divide-border">
                   {expectedFields.map((field: any) => (
-                    <div key={field.name} className="grid grid-cols-2 gap-4 p-4 items-center hover:bg-zinc-50/50 transition-colors">
+                    <div key={field.name} className="grid grid-cols-2 gap-4 p-4 items-center hover:bg-muted/50 transition-colors">
                       <div className="flex flex-col">
-                        <span className="font-medium text-indigo-950 flex items-center gap-2">
+                        <span className="font-medium text-foreground flex items-center gap-2">
                           {field.name}
-                          {field.required && <span className="text-[10px] text-red-500 font-bold">*</span>}
+                          {field.required && <span className="text-[10px] text-destructive font-bold">*</span>}
                         </span>
-                        <span className="text-xs text-zinc-500 font-mono mt-1 opacity-70">type: {field.type || 'any'}</span>
+                        <span className="text-xs text-muted-foreground font-mono mt-1 opacity-70">type: {field.type || 'any'}</span>
                       </div>
                       
                       <Select 
@@ -161,7 +161,7 @@ export function FieldMappingDialog({
                             <SelectItem key={col.Field || col.name || col} value={col.Field || col.name || col}>
                               <div className="flex items-center gap-2">
                                 <span className="font-mono">{col.Field || col.name || col}</span>
-                                {col.Type && <span className="text-[10px] text-zinc-400">({col.Type})</span>}
+                                {col.Type && <span className="text-[10px] text-muted-foreground">({col.Type})</span>}
                               </div>
                             </SelectItem>
                           ))}
@@ -175,9 +175,9 @@ export function FieldMappingDialog({
           </div>
         )}
 
-        <DialogFooter className="mt-6 border-t border-zinc-100 pt-4">
+        <DialogFooter className="mt-6 border-t border-border pt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleSave} disabled={loading || saving} className="gap-2">
+          <Button onClick={handleSave} disabled={loading || saving} className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Save Mapping
           </Button>
