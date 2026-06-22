@@ -1,0 +1,188 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { getCanonicalModels, getFieldMapping, updateFieldMapping } from "@/lib/api/data-sources";
+import { Loader2, ArrowRightLeft, Save, Sparkles } from "lucide-react";
+
+interface FieldMappingDialogProps {
+  dataSourceId: string;
+  tableName: string;
+  columns: any[];
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function FieldMappingDialog({
+  dataSourceId,
+  tableName,
+  columns,
+  open,
+  onOpenChange,
+}: FieldMappingDialogProps) {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  
+  const [models, setModels] = useState<any[]>([]);
+  const [selectedModelId, setSelectedModelId] = useState<string>("");
+  const [mappings, setMappings] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (!open) return;
+    
+    let isMounted = true;
+    setLoading(true);
+    setError("");
+
+    Promise.all([
+      getCanonicalModels(),
+      getFieldMapping(dataSourceId, tableName)
+    ]).then(([modelsData, mappingData]) => {
+      if (isMounted) {
+        setModels(modelsData);
+        if (mappingData.canonicalModelId) {
+          setSelectedModelId(mappingData.canonicalModelId);
+          setMappings(mappingData.mappingRules || {});
+        } else if (modelsData.length > 0) {
+          // Default to first model
+          setSelectedModelId(modelsData[0].id);
+        }
+        setLoading(false);
+      }
+    }).catch(err => {
+      if (isMounted) {
+        setError("Failed to load mapping data.");
+        setLoading(false);
+      }
+    });
+
+    return () => { isMounted = false; };
+  }, [dataSourceId, tableName, open]);
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      await updateFieldMapping(dataSourceId, tableName, selectedModelId, mappings);
+      onOpenChange(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save mapping");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const selectedModel = models.find(m => m.id === selectedModelId);
+  const expectedFields = selectedModel?.schemaJson || [];
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <ArrowRightLeft className="h-5 w-5 text-indigo-500" />
+            Map Fields: <span className="font-mono bg-zinc-100 px-2 py-0.5 rounded text-sm text-zinc-800">{tableName}</span>
+          </DialogTitle>
+          <DialogDescription>
+            Map your raw database columns to the standard Canonical Schema.
+          </DialogDescription>
+        </DialogHeader>
+
+        {loading ? (
+          <div className="flex flex-col items-center justify-center p-12 text-zinc-500">
+            <Loader2 className="h-8 w-8 animate-spin mb-4" />
+            <p>Loading schema definitions...</p>
+          </div>
+        ) : error ? (
+          <div className="p-4 text-center text-red-500 border border-red-200 bg-red-50 rounded-md">
+            {error}
+          </div>
+        ) : (
+          <div className="space-y-6 mt-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-zinc-700">Target Canonical Model</label>
+              <Select value={selectedModelId} onValueChange={(val) => setSelectedModelId(val || "")}>
+                <SelectTrigger className="w-full h-12 bg-white">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-indigo-500" />
+                    <SelectValue placeholder="Select a model" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {models.map(m => (
+                    <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {selectedModel && (
+              <div className="border border-zinc-200 rounded-lg overflow-hidden bg-white">
+                <div className="grid grid-cols-2 gap-4 p-3 bg-zinc-50 border-b border-zinc-200 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                  <div>Canonical Field ({selectedModel.name})</div>
+                  <div>Raw Column ({tableName})</div>
+                </div>
+                <div className="divide-y divide-zinc-100">
+                  {expectedFields.map((field: any) => (
+                    <div key={field.name} className="grid grid-cols-2 gap-4 p-4 items-center hover:bg-zinc-50/50 transition-colors">
+                      <div className="flex flex-col">
+                        <span className="font-medium text-indigo-950 flex items-center gap-2">
+                          {field.name}
+                          {field.required && <span className="text-[10px] text-red-500 font-bold">*</span>}
+                        </span>
+                        <span className="text-xs text-zinc-500 font-mono mt-1 opacity-70">type: {field.type || 'any'}</span>
+                      </div>
+                      
+                      <Select 
+                        value={mappings[field.name] || ""} 
+                        onValueChange={(val) => setMappings(prev => ({ ...prev, [field.name]: val || "" }))}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="-- Ignore --" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value=" ">-- Ignore --</SelectItem>
+                          {columns.map(col => (
+                            <SelectItem key={col.Field || col.name || col} value={col.Field || col.name || col}>
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono">{col.Field || col.name || col}</span>
+                                {col.Type && <span className="text-[10px] text-zinc-400">({col.Type})</span>}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        <DialogFooter className="mt-6 border-t border-zinc-100 pt-4">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button onClick={handleSave} disabled={loading || saving} className="gap-2">
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            Save Mapping
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

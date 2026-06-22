@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt   DateTime     @updatedAt
+  users           User[]
+  dataSources     DataSource[]
+  canonicalModels CanonicalModel[]
+}
+
+model User {
+  id             String       @id @default(uuid())
+  email          String       @unique
+  password       String
+  firstName      String
+  lastName       String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+}
+
+enum DataSourceType {
+  MYSQL
+  POSTGRESQL
+  SHOPIFY
+}
+
+enum DataSourceStatus {
+  ACTIVE
+  INACTIVE
+  ERROR
+}
+
+model DataSource {
+  id                String           @id @default(uuid())
+  organizationId    String
+  organization      Organization     @relation(fields: [organizationId], references: [id])
+  name              String
+  type              DataSourceType
+  status            DataSourceStatus @default(ACTIVE)
+  configurationJson Json
+  schemaJson        Json?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  rawTables         RawTable[]
+}
+
+model RawTable {
+  id                String       @id @default(uuid())
+  dataSourceId      String
+  dataSource        DataSource   @relation(fields: [dataSourceId], references: [id])
+  tableName         String
+  syncEnabled       Boolean      @default(true)
+  incrementalColumn String?
+  lastSyncTimestamp DateTime?
+  records           RawRecord[]
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  fieldMappings     FieldMapping[]
+
+  @@unique([dataSourceId, tableName])
+}
+
+model RawRecord {
+  id              String           @id @default(uuid())
+  rawTableId      String
+  rawTable        RawTable         @relation(fields: [rawTableId], references: [id])
+  data            Json
+  createdAt       DateTime         @default(now())
+  canonicalRecord CanonicalRecord?
+}
+
+model CanonicalModel {
+  id             String            @id @default(uuid())
+  organizationId String
+  organization   Organization      @relation(fields: [organizationId], references: [id])
+  name           String
+  schemaJson     Json?
+  mappings       FieldMapping[]
+  records        CanonicalRecord[]
+  createdAt      DateTime          @default(now())
+
+  @@unique([organizationId, name])
+}
+
+model FieldMapping {
+  id               String         @id @default(uuid())
+  canonicalModelId String
+  canonicalModel   CanonicalModel @relation(fields: [canonicalModelId], references: [id])
+  rawTableId       String
+  rawTable         RawTable       @relation(fields: [rawTableId], references: [id])
+  mappingRules     Json
+  createdAt        DateTime       @default(now())
+
+  @@unique([canonicalModelId, rawTableId])
+}
+
+enum CanonicalRecordStatus {
+  MAPPED
+  UNMAPPED
+  ERROR
+}
+
+model CanonicalRecord {
+  id               String                @id @default(uuid())
+  canonicalModelId String
+  canonicalModel   CanonicalModel        @relation(fields: [canonicalModelId], references: [id])
+  rawRecordId      String                @unique
+  rawRecord        RawRecord             @relation(fields: [rawRecordId], references: [id])
+  data             Json
+  status           CanonicalRecordStatus @default(MAPPED)
+  createdAt        DateTime              @default(now())
+}

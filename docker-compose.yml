@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: saas_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # The API and Web services can be run natively during dev via `npm run dev`
+  # but are included here for completeness if you prefer fully dockerized setup.
+  # Note: You'll need to define Dockerfiles in apps/api and apps/web if you want to run these.
+  # For now, we leave them commented out to encourage local Node execution for the fastest dev experience.
+
+  # api:
+  #   build:
+  #     context: .
+  #     dockerfile: apps/api/Dockerfile
+  #   ports:
+  #     - "3001:3001"
+  #   environment:
+  #     - DATABASE_URL=postgresql://postgres:password@postgres:5432/saas_db
+  #     - REDIS_URL=redis://redis:6379
+  #   depends_on:
+  #     - postgres
+  #     - redis
+
+  # web:
+  #   build:
+  #     context: .
+  #     dockerfile: apps/web/Dockerfile
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - NEXT_PUBLIC_API_URL=http://localhost:3001
+  #   depends_on:
+  #     - api
+
+volumes:
+  postgres_data:
+  redis_data:
