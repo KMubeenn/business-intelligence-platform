@@ -15,6 +15,7 @@ model Organization {
   users           User[]
   dataSources     DataSource[]
   canonicalModels CanonicalModel[]
+  reportConfigs   ReportConfig[]
 }
 
 model User {
@@ -125,4 +126,29 @@ model CanonicalRecord {
   data             Json
   status           CanonicalRecordStatus @default(MAPPED)
   createdAt        DateTime              @default(now())
+}
+
+model ReportConfig {
+  id               String            @id @default(uuid())
+  organizationId   String
+  organization     Organization      @relation(fields: [organizationId], references: [id])
+  name             String
+  userQuery        String
+  cronSchedule     String
+  targetEmails     String[]
+  includedModels   String[]
+  isActive         Boolean           @default(true)
+  executions       ReportExecution[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model ReportExecution {
+  id               String       @id @default(uuid())
+  reportConfigId   String
+  reportConfig     ReportConfig @relation(fields: [reportConfigId], references: [id], onDelete: Cascade)
+  status           String
+  pdfUrl           String?
+  errorMessage     String?
+  executedAt       DateTime     @default(now())
 }

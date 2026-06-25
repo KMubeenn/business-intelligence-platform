@@ -15,6 +15,8 @@ import { MockApiModule } from './mock-api/mock-api.module';
 
 import { BullModule } from '@nestjs/bullmq';
 
+import { ReportsModule } from './reports/reports.module';
+
 @Module({
   imports: [
     BullModule.forRoot({
@@ -23,7 +25,7 @@ import { BullModule } from '@nestjs/bullmq';
         port: parseInt(process.env.REDIS_PORT || '6379', 10),
       },
     }),
-    ScheduleModule.forRoot(), PrismaModule, AuthModule, DataSourceModule, ConnectorsModule, SyncModule, TransformationModule, CanonicalModelModule, AnalyticsModule, MockApiModule
+    ScheduleModule.forRoot(), PrismaModule, AuthModule, DataSourceModule, ConnectorsModule, SyncModule, TransformationModule, CanonicalModelModule, AnalyticsModule, MockApiModule, ReportsModule
   ],
   controllers: [AppController],
   providers: [AppService],

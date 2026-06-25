@@ -12,6 +12,7 @@ import {
   LogOut,
   Package2,
   TableProperties,
+  FileText,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -43,6 +44,7 @@ export default function DashboardLayout({
     { href: '/dashboard',              label: 'Command Center',  icon: Home,            exact: true },
     { href: '/dashboard/data-sources', label: 'Data Sources',    icon: Package,         exact: false },
     { href: '/dashboard/data-explorer',label: 'Data Explorer',   icon: TableProperties, exact: false },
+    { href: '/dashboard/reports',      label: 'AI Reports',      icon: FileText,        exact: false },
     { href: '#',                        label: 'Team',            icon: Users,           exact: false },
   ];
 
