@@ -63,6 +63,7 @@ model RawTable {
   tableName         String
   syncEnabled       Boolean      @default(true)
   incrementalColumn String?
+  primaryKeyColumn  String?
   lastSyncTimestamp DateTime?
   records           RawRecord[]
   createdAt         DateTime     @default(now())
@@ -76,9 +77,12 @@ model RawRecord {
   id              String           @id @default(uuid())
   rawTableId      String
   rawTable        RawTable         @relation(fields: [rawTableId], references: [id], onDelete: Cascade)
+  externalId      String?
   data            Json
   createdAt       DateTime         @default(now())
   canonicalRecord CanonicalRecord?
+
+  @@unique([rawTableId, externalId])
 }
 
 model CanonicalModel {

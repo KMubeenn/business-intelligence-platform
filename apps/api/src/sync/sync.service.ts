@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
-import { ConnectorFactory } from '../connectors/connector.factory';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 
 @Injectable()
 export class SyncService {
@@ -9,51 +10,37 @@ export class SyncService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly connectorFactory: ConnectorFactory,
+    @InjectQueue('sync') private syncQueue: Queue
   ) {}
 
   @Cron(CronExpression.EVERY_30_SECONDS)
   async handleSync() {
-    this.logger.log('Starting ingestion sync...');
+    this.logger.log('Sweeping for tables to sync...');
 
     const tablesToSync = await this.prisma.rawTable.findMany({
       where: { syncEnabled: true },
-      include: { dataSource: true },
+      select: { id: true, tableName: true, incrementalColumn: true, lastSyncTimestamp: true },
     });
 
     for (const rawTable of tablesToSync) {
-      try {
-        const connector = this.connectorFactory.getConnector(
-          rawTable.dataSource.type,
-          rawTable.dataSource.configurationJson,
-        );
-
-        const rows = await connector.sync(
-          rawTable.tableName,
-          rawTable.incrementalColumn,
-          rawTable.lastSyncTimestamp,
-        );
-
-        if (rows.length > 0) {
-          await this.prisma.rawRecord.createMany({
-            data: rows.map(row => ({
-              rawTableId: rawTable.id,
-              data: row as any,
-            })),
-          });
-
-          await this.prisma.rawTable.update({
-            where: { id: rawTable.id },
-            data: { lastSyncTimestamp: new Date() },
-          });
-
-          this.logger.log(`Synced ${rows.length} rows for table ${rawTable.tableName}`);
-        } else {
-          this.logger.debug(`No new rows for table ${rawTable.tableName}`);
+      // Throttle full syncs (no incremental column) to once per hour
+      if (!rawTable.incrementalColumn && rawTable.lastSyncTimestamp) {
+        const timeSinceLastSync = new Date().getTime() - rawTable.lastSyncTimestamp.getTime();
+        if (timeSinceLastSync < 3600000) {
+          continue;
         }
-      } catch (error) {
-        this.logger.error(`Error syncing table ${rawTable.tableName}:`, error);
       }
+
+      // Add a job for each table to be processed asynchronously
+      await this.syncQueue.add('sync-table', {
+        rawTableId: rawTable.id,
+      }, {
+        removeOnComplete: true,
+        removeOnFail: false,
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 2000 }
+      });
+      this.logger.debug(`Queued sync job for table ${rawTable.tableName}`);
     }
   }
 }

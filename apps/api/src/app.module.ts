@@ -11,9 +11,20 @@ import { SyncModule } from './sync/sync.module';
 import { TransformationModule } from './transformation/transformation.module';
 import { CanonicalModelModule } from './canonical-model/canonical-model.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { MockApiModule } from './mock-api/mock-api.module';
+
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
-  imports: [ScheduleModule.forRoot(), PrismaModule, AuthModule, DataSourceModule, ConnectorsModule, SyncModule, TransformationModule, CanonicalModelModule, AnalyticsModule],
+  imports: [
+    BullModule.forRoot({
+      connection: {
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT || '6379', 10),
+      },
+    }),
+    ScheduleModule.forRoot(), PrismaModule, AuthModule, DataSourceModule, ConnectorsModule, SyncModule, TransformationModule, CanonicalModelModule, AnalyticsModule, MockApiModule
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

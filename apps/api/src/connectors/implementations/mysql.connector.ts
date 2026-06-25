@@ -74,12 +74,17 @@ export class MySQLConnector extends BaseConnector {
 
   async getColumns(tableName: string): Promise<any[]> {
     try {
-      await this.connect();
-      const [rows] = await this.connection!.query(`SHOW COLUMNS FROM ??`, [
-        tableName,
-      ]);
+      if (!this.connection) await this.connect();
+      
+      // In MySQL, "Key: 'PRI'" indicates the primary key
+      const [rows] = await this.connection!.query(`DESCRIBE ??`, [tableName]);
+      
       await this.disconnect();
-      return rows as any[];
+      return (rows as any[]).map(row => ({
+        Field: row.Field,
+        Type: row.Type,
+        IsPrimaryKey: row.Key === 'PRI'
+      }));
     } catch (error) {
       console.error(`MySQL getColumns failed for table ${tableName}:`, error);
       throw error;

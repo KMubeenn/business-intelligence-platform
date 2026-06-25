@@ -131,9 +131,16 @@ export class RestApiConnector extends BaseConnector {
 
       if (Array.isArray(data) && data.length > 0) {
         // Extract keys from the first object
-        return Object.keys(data[0]).map(key => ({
+        const fields = Object.keys(data[0]);
+        
+        // Smart Primary Key Inference
+        const commonIdNames = ['id', 'uuid', '_id', `${tableName}_id`, `${tableName.slice(0, -1)}_id`, 'sku'];
+        const guessedPrimaryKey = fields.find(f => commonIdNames.includes(f.toLowerCase())) || null;
+
+        return fields.map(key => ({
           Field: key,
           Type: typeof data[0][key],
+          IsPrimaryKey: key === guessedPrimaryKey
         }));
       }
 
