@@ -12,6 +12,7 @@ export interface OverallMetrics {
   totalSources: number;
   totalModels: number;
   totalNormalizedRecords: number;
+  modelsBreakdown: { name: string; records: number }[];
 }
 
 export interface AggregationResult {

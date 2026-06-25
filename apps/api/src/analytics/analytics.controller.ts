@@ -14,6 +14,39 @@ export class AnalyticsController {
     return this.analyticsService.getOverallMetrics(user.organizationId);
   }
 
+  @Get('pipeline-overview')
+  async getPipelineOverview(@Req() req: Request) {
+    const user = req.user as any;
+    return this.analyticsService.getPipelineOverview(user.organizationId);
+  }
+
+  @Get('source-detail')
+  async getSourceDetail(
+    @Req() req: Request,
+    @Query('sourceId') sourceId: string,
+  ) {
+    const user = req.user as any;
+    return this.analyticsService.getSourceDetail(user.organizationId, sourceId);
+  }
+
+  @Get('explorer')
+  async getExplorerData(
+    @Req() req: Request,
+    @Query('modelId', ParseUUIDPipe) modelId: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+    @Query('source') source?: string,
+  ) {
+    const user = req.user as any;
+    return this.analyticsService.getExplorerData(
+      user.organizationId,
+      modelId,
+      page ? parseInt(page) : 1,
+      pageSize ? parseInt(pageSize) : 50,
+      source,
+    );
+  }
+
   @Get('query')
   async getAggregatedData(
     @Req() req: Request,

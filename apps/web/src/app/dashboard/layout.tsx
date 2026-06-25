@@ -10,7 +10,8 @@ import {
   Search,
   Users,
   LogOut,
-  Package2
+  Package2,
+  TableProperties,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -38,47 +39,49 @@ export default function DashboardLayout({
     router.push("/login")
   }
 
+  const navItems = [
+    { href: '/dashboard',              label: 'Command Center',  icon: Home,            exact: true },
+    { href: '/dashboard/data-sources', label: 'Data Sources',    icon: Package,         exact: false },
+    { href: '/dashboard/data-explorer',label: 'Data Explorer',   icon: TableProperties, exact: false },
+    { href: '#',                        label: 'Team',            icon: Users,           exact: false },
+  ];
+
   return (
-    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] bg-background text-foreground">
+    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[260px_1fr] bg-background text-foreground">
       {/* SIDEBAR */}
-      <div className="hidden border-r border-border bg-card md:block">
-        <div className="flex h-full max-h-screen flex-col gap-4">
+      <div className="hidden border-r border-border bg-card/80 backdrop-blur-xl md:block">
+        <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-16 items-center border-b border-border px-6">
-            <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-              <Package2 className="h-6 w-6 text-primary" />
-              <span>SaaS Foundation</span>
+            <Link href="/" className="flex items-center gap-2.5 font-bold text-lg">
+              <div className="h-7 w-7 rounded-lg bg-primary flex items-center justify-center">
+                <Package2 className="h-4 w-4 text-primary-foreground" />
+              </div>
+              <span className="text-foreground">SaaS Foundation</span>
             </Link>
           </div>
           <div className="flex-1 py-4">
-            <nav className="grid items-start px-4 text-sm font-medium gap-1">
-              <Link
-                href="/dashboard"
-                className={`flex items-center gap-3 rounded-md px-3 py-2.5 transition-all ${pathname === '/dashboard'
-                    ? 'bg-accent text-accent-foreground font-semibold'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
-                  }`}
-              >
-                <Home className="h-4 w-4" />
-                Dashboard
-              </Link>
-              <Link
-                href="/dashboard/data-sources"
-                className={`flex items-center gap-3 rounded-md px-3 py-2.5 transition-all ${pathname.startsWith('/dashboard/data-sources')
-                    ? 'bg-accent text-accent-foreground font-semibold'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
-                  }`}
-              >
-                <Package className="h-4 w-4" />
-                Data Sources
-              </Link>
-              <Link
-                href="#"
-                className="flex items-center gap-3 rounded-md px-3 py-2.5 text-muted-foreground transition-all hover:text-foreground hover:bg-accent/50"
-              >
-                <Users className="h-4 w-4" />
-                Team
-              </Link>
+            <nav className="grid items-start px-3 text-sm font-medium gap-0.5">
+              {navItems.map(item => {
+                const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href) && item.href !== '#';
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-150 ${
+                      isActive
+                        ? 'bg-primary/10 text-primary font-semibold border border-primary/20'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                    }`}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {item.label}
+                  </Link>
+                );
+              })}
             </nav>
+          </div>
+          <div className="p-4 border-t border-border/50">
+            <div className="text-xs text-muted-foreground text-center">Business Intelligence Platform</div>
           </div>
         </div>
       </div>
