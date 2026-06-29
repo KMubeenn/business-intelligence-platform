@@ -8,7 +8,13 @@ import {
   Delete,
   UseGuards,
   Request,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { DataSourceService } from './data-source.service';
 import { CreateDataSourceDto } from './dto/create-data-source.dto';
 import { UpdateDataSourceDto } from './dto/update-data-source.dto';
@@ -18,6 +24,35 @@ import { AuthGuard } from '@nestjs/passport';
 @Controller('data-sources')
 export class DataSourceController {
   constructor(private readonly dataSourceService: DataSourceService) {}
+
+  @Post('upload-excel')
+  @UseInterceptors(FileInterceptor('file', {
+    storage: diskStorage({
+      destination: './uploads',
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        cb(null, `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`);
+      },
+    }),
+  }))
+  async uploadExcel(
+    @UploadedFile() file: Express.Multer.File,
+    @Body('name') name: string,
+    @Request() req: { user: { organizationId: string } },
+  ) {
+    if (!file) {
+      throw new BadRequestException('No Excel file uploaded');
+    }
+
+    // Pass the local file path to the config
+    const dto: CreateDataSourceDto = {
+      name: name || file.originalname,
+      type: 'EXCEL' as any,
+      configurationJson: { filePath: file.path },
+    };
+
+    return this.dataSourceService.create(dto, req.user.organizationId);
+  }
 
   @Post()
   create(

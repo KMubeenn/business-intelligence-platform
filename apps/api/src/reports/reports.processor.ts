@@ -19,7 +19,7 @@ export class ReportsProcessor extends WorkerHost {
 
   async process(job: Job<any, any, string>): Promise<any> {
     const { executionId, configId, organizationId } = job.data;
-    
+
     this.logger.log(`Processing report execution ${executionId}`);
 
     try {
@@ -41,7 +41,7 @@ export class ReportsProcessor extends WorkerHost {
           include: {
             records: {
               where: { status: 'MAPPED' },
-              take: 100 // Reduced from 2000 to 100 to stay within free-tier token limits (e.g., Groq's 12k TPM)
+              take: 100
             }
           }
         });
@@ -72,6 +72,34 @@ CRITICAL INSTRUCTIONS FOR PDF GENERATION:
 `;
 
       const strategies = [
+        // {
+        //   name: `Ollama Local (${process.env.OLLAMA_MODEL || 'qwen2.5'})`,
+        //   execute: async (prompt: string) => {
+        //     const baseURL = (process.env.OLLAMA_BASE_URL || 'http://localhost:11434/v1').replace('/v1', '');
+        //     const modelName = process.env.OLLAMA_MODEL || 'qwen2.5';
+
+        //     // Using native Ollama REST API instead of OpenAI SDK so we can force a massive context window
+        //     const response = await fetch(`${baseURL}/api/chat`, {
+        //       method: 'POST',
+        //       headers: { 'Content-Type': 'application/json' },
+        //       body: JSON.stringify({
+        //         model: modelName,
+        //         messages: [{ role: 'user', content: prompt }],
+        //         stream: false,
+        //         options: {
+        //           num_ctx: 32768 // Force 32k context window for large 1000-record payloads
+        //         }
+        //       })
+        //     });
+
+        //     if (!response.ok) {
+        //       throw new Error(`Ollama HTTP Error: ${response.status}`);
+        //     }
+
+        //     const json = await response.json();
+        //     return json.message?.content || '';
+        //   }
+        // },
         {
           name: 'Google Gen AI (gemini-2.5-flash)',
           execute: async (prompt: string) => {
@@ -101,8 +129,8 @@ CRITICAL INSTRUCTIONS FOR PDF GENERATION:
           execute: async (prompt: string) => {
             if (!process.env.OPENROUTER_API_KEY) throw new Error('OPENROUTER_API_KEY not configured');
             const { OpenAI } = require('openai');
-            const openrouter = new OpenAI({ 
-              apiKey: process.env.OPENROUTER_API_KEY, 
+            const openrouter = new OpenAI({
+              apiKey: process.env.OPENROUTER_API_KEY,
               baseURL: 'https://openrouter.ai/api/v1',
               defaultHeaders: {
                 "HTTP-Referer": "http://localhost:3000",
@@ -125,10 +153,12 @@ CRITICAL INSTRUCTIONS FOR PDF GENERATION:
         try {
           this.logger.log(`Attempting generation with strategy: ${strategy.name}`);
           generatedText = await strategy.execute(prompt);
-          
-          if (generatedText) {
+
+          if (generatedText && generatedText.trim().length > 0) {
             this.logger.log(`Successfully generated report using ${strategy.name}`);
             break; // Success!
+          } else {
+            this.logger.warn(`Strategy ${strategy.name} failed: Returned an empty response.`);
           }
         } catch (err: any) {
           this.logger.warn(`Strategy ${strategy.name} failed: ${err.message}`);
@@ -204,7 +234,7 @@ CRITICAL INSTRUCTIONS FOR PDF GENERATION:
 
     } catch (error: any) {
       this.logger.error(`Report execution failed: ${error.message}`, error.stack);
-      
+
       const maxAttempts = job.opts.attempts || 1;
       // job.attemptsMade starts at 0 for the first attempt in BullMQ 1.x but typically it increments before the process. Let's use it safely:
       if (job.attemptsMade < maxAttempts) {

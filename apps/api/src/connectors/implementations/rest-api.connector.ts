@@ -14,6 +14,8 @@ export interface RestApiConfig {
     name: string;
     path: string;
     method?: 'GET' | 'POST';
+    primaryKey?: string | string[];
+    cursorField?: string;
     pagination?: {
       type: 'page' | 'cursor' | 'offset';
       paramName: string;
@@ -133,15 +135,25 @@ export class RestApiConnector extends BaseConnector {
         // Extract keys from the first object
         const fields = Object.keys(data[0]);
         
-        // Smart Primary Key Inference
-        const commonIdNames = ['id', 'uuid', '_id', `${tableName}_id`, `${tableName.slice(0, -1)}_id`, 'sku'];
-        const guessedPrimaryKey = fields.find(f => commonIdNames.includes(f.toLowerCase())) || null;
-
-        return fields.map(key => ({
-          Field: key,
-          Type: typeof data[0][key],
-          IsPrimaryKey: key === guessedPrimaryKey
-        }));
+        // Production ELT practice: Do NOT guess primary keys. Use explicit user config.
+        const configKey = ep.primaryKey;
+        
+        return fields.map(key => {
+          let isPrimaryKey = false;
+          if (configKey) {
+            if (Array.isArray(configKey)) {
+              isPrimaryKey = configKey.includes(key);
+            } else {
+              isPrimaryKey = configKey === key;
+            }
+          }
+          
+          return {
+            Field: key,
+            Type: typeof data[0][key],
+            IsPrimaryKey: isPrimaryKey
+          };
+        });
       }
 
       return [];

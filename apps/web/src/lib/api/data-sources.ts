@@ -34,6 +34,24 @@ export async function createDataSource(data: Record<string, unknown>) {
   return res.json();
 }
 
+export async function uploadExcelDataSource(file: File, name: string) {
+  const token = localStorage.getItem("access_token");
+  const formData = new FormData();
+  formData.append("file", file);
+  if (name) formData.append("name", name);
+
+  const res = await fetch(`${API_URL}/data-sources/upload-excel`, {
+    method: "POST",
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      // Do NOT set Content-Type to application/json, browser sets multipart/form-data automatically
+    },
+    body: formData,
+  });
+  if (!res.ok) throw new Error("Failed to upload Excel file");
+  return res.json();
+}
+
 export async function updateDataSource(id: string, data: Record<string, unknown>) {
   const res = await fetch(`${API_URL}/data-sources/${id}`, {
     method: "PUT",

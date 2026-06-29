@@ -127,14 +127,20 @@ export class DataSourceService {
       where: { dataSourceId: dataSource.id, tableName },
     });
     
+    // Discover schema to identify explicit primary keys
+    const connector = this.connectorFactory.getConnector(dataSource.type as any, dataSource.configurationJson as any);
+    const columns = await connector.getColumns(tableName);
+    const primaryKeyColumns = columns.filter(c => c.IsPrimaryKey).map(c => c.Field);
+    const primaryKeyColumn = primaryKeyColumns.length > 0 ? primaryKeyColumns.join(',') : null;
+    
     if (existing) {
-      if (!existing.syncEnabled) {
-        return this.prisma.rawTable.update({
-          where: { id: existing.id },
-          data: { syncEnabled: true },
-        });
-      }
-      return existing;
+      return this.prisma.rawTable.update({
+        where: { id: existing.id },
+        data: { 
+          syncEnabled: true,
+          primaryKeyColumn 
+        },
+      });
     }
 
     return this.prisma.rawTable.create({
@@ -142,6 +148,7 @@ export class DataSourceService {
         dataSourceId: dataSource.id,
         tableName,
         syncEnabled: true,
+        primaryKeyColumn,
       },
     });
   }

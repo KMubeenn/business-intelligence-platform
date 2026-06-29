@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getReports, createReport, deleteReport, executeReport, ReportConfig } from "@/lib/api/reports";
+import { getCanonicalModels } from "@/lib/api/data-sources";
 import { Plus, Play, Trash2, FileText, CheckCircle2, Clock, AlertCircle, Calendar, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -21,13 +22,17 @@ export default function ReportsPage() {
   const [name, setName] = useState("");
   const [query, setQuery] = useState("");
   const [cron, setCron] = useState("0 19 * * *");
+  const [cronPreset, setCronPreset] = useState("0 19 * * *");
   const [emails, setEmails] = useState("");
-  const [models, setModels] = useState("Inventory, Users, Order");
+  const [availableModels, setAvailableModels] = useState<any[]>([]);
+  const [selectedModels, setSelectedModels] = useState<string[]>([]);
 
   const fetchReports = async () => {
     try {
       const data = await getReports();
       setReports(data);
+      const modelsData = await getCanonicalModels();
+      setAvailableModels(modelsData);
       setLoading(false);
     } catch (err) {
       setUiError("Failed to fetch reports. Please ensure the backend is running.");
@@ -54,12 +59,14 @@ export default function ReportsPage() {
     setUiError(null);
     setUiSuccess(null);
     try {
+      if (selectedModels.length === 0) throw new Error("Please select at least one data model.");
+      
       await createReport({
         name,
         userQuery: query,
-        cronSchedule: cron,
+        cronSchedule: cronPreset === 'custom' ? cron : cronPreset,
         targetEmails: emails.split(',').map(e => e.trim()).filter(e => e),
-        includedModels: models.split(',').map(e => e.trim()).filter(e => e),
+        includedModels: selectedModels,
       });
       setIsModalOpen(false);
       setRefreshKey(k => k + 1);
@@ -218,14 +225,53 @@ export default function ReportsPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Cron Schedule</Label>
-                <Input placeholder="0 19 * * *" value={cron} onChange={(e: any) => setCron(e.target.value)} />
-                <p className="text-xs text-muted-foreground">Default: 7 PM every day</p>
+                <Label>Schedule</Label>
+                <select 
+                  value={cronPreset}
+                  onChange={(e) => setCronPreset(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="0 8 * * *">Daily at 8:00 AM</option>
+                  <option value="0 19 * * *">Daily at 7:00 PM</option>
+                  <option value="0 9 * * 1">Every Monday at 9:00 AM</option>
+                  <option value="0 9 1 * *">1st of Every Month at 9:00 AM</option>
+                  <option value="custom">Custom Cron Expression</option>
+                </select>
+                {cronPreset === 'custom' && (
+                  <div className="mt-2">
+                    <Input placeholder="0 19 * * *" value={cron} onChange={(e: any) => setCron(e.target.value)} />
+                    <p className="text-xs text-muted-foreground mt-1">Enter a valid cron string.</p>
+                  </div>
+                )}
               </div>
               <div className="space-y-2">
-                <Label>Included Models</Label>
-                <Input placeholder="Inventory, Users" value={models} onChange={(e: any) => setModels(e.target.value)} />
-                <p className="text-xs text-muted-foreground">Comma separated models</p>
+                <Label>Included Data Models</Label>
+                <div className="border border-input rounded-md p-3 h-24 overflow-y-auto space-y-3 bg-background/50">
+                  {availableModels.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No Golden Schemas found.</p>
+                  ) : (
+                    availableModels.map((model) => (
+                      <div key={model.id} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id={model.id}
+                          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                          checked={selectedModels.includes(model.name)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedModels([...selectedModels, model.name]);
+                            } else {
+                              setSelectedModels(selectedModels.filter(m => m !== model.name));
+                            }
+                          }}
+                        />
+                        <label htmlFor={model.id} className="text-sm font-medium leading-none cursor-pointer">
+                          {model.name}
+                        </label>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
             <div className="space-y-2">

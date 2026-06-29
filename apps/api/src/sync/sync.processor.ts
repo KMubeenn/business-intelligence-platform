@@ -52,10 +52,21 @@ export class SyncProcessor extends WorkerHost {
         // The Upsert Engine
         for (const row of rows) {
           const rowData = row as any;
-          // Determine the externalId based on primaryKeyColumn, default to null if not provided
           let extId: string | null = null;
           if (rawTable.primaryKeyColumn && rowData[rawTable.primaryKeyColumn] !== undefined) {
             extId = String(rowData[rawTable.primaryKeyColumn]);
+          }
+
+          if (!extId) {
+            if (rowData.id) extId = String(rowData.id);
+            else if (rowData.uid) extId = String(rowData.uid);
+            else if (rowData.uuid) extId = String(rowData.uuid);
+            else if (rowData.sku) extId = String(rowData.sku);
+            else if (rowData.customer_id) extId = String(rowData.customer_id);
+            else {
+              const crypto = require('crypto');
+              extId = crypto.createHash('sha256').update(JSON.stringify(rowData)).digest('hex');
+            }
           }
 
           if (extId) {
@@ -73,15 +84,6 @@ export class SyncProcessor extends WorkerHost {
               create: {
                 rawTableId: rawTable.id,
                 externalId: extId,
-                data: rowData,
-              }
-            });
-          } else {
-            // Fallback to generic insert if no primary key is defined
-            await this.prisma.rawRecord.create({
-              data: {
-                rawTableId: rawTable.id,
-                externalId: null,
                 data: rowData,
               }
             });

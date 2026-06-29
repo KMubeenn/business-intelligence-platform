@@ -42,12 +42,12 @@ export class MockApiController {
     const inventory = Array.from({ length: 50 }).map((_, i) => {
       const id = (pageNum - 1) * 50 + i + 1;
       return {
-        sku: `SKU-${Math.floor(10000 + Math.random() * 90000)}-${id}`,
+        sku: `SKU-88210-${id}`, // Fixed, deterministic SKU
         product_name: `Awesome Product ${id}`,
-        stock_count: Math.floor(Math.random() * 500),
-        category: categories[Math.floor(Math.random() * categories.length)],
-        price: (Math.random() * 100 + 10).toFixed(2),
-        last_restocked: new Date(Date.now() - Math.random() * 5000000000).toISOString(),
+        stock_count: (id * 17) % 500, // Deterministic pseudo-random stock
+        category: categories[id % categories.length],
+        price: (10 + (id * 5.5) % 100).toFixed(2),
+        last_restocked: '2026-06-20T10:00:00.000Z',
       };
     });
 
