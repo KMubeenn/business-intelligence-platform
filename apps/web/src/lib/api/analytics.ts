@@ -1,12 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-
-function getHeaders() {
-  const token = localStorage.getItem("access_token");
-  return {
-    "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
+import api from './axios';
 
 export interface OverallMetrics {
   totalSources: number;
@@ -21,11 +13,8 @@ export interface AggregationResult {
 }
 
 export const getOverallMetrics = async (): Promise<OverallMetrics> => {
-  const response = await fetch(`${API_URL}/analytics/summary`, {
-    headers: getHeaders(),
-  });
-  if (!response.ok) throw new Error("Failed to fetch analytics summary");
-  return response.json();
+  const { data } = await api.get('/analytics/summary');
+  return data;
 };
 
 export const getAggregatedData = async (
@@ -39,10 +28,6 @@ export const getAggregatedData = async (
   if (metricField) params.append('metricField', metricField);
   if (metricType) params.append('metricType', metricType);
 
-  const response = await fetch(`${API_URL}/analytics/query?${params.toString()}`, {
-    headers: getHeaders(),
-    cache: 'no-store',
-  });
-  if (!response.ok) throw new Error("Failed to fetch aggregated data");
-  return response.json();
+  const { data } = await api.get(`/analytics/query?${params.toString()}`);
+  return data;
 };

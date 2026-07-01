@@ -1,3 +1,5 @@
+import api from './axios';
+
 export interface ReportExecution {
   id: string;
   reportConfigId: string;
@@ -14,6 +16,7 @@ export interface ReportConfig {
   cronSchedule: string;
   targetEmails: string[];
   includedModels: string[];
+  templateId?: string;
   isActive: boolean;
   executions?: ReportExecution[];
   createdAt: string;
@@ -21,41 +24,24 @@ export interface ReportConfig {
 }
 
 export async function getReports(): Promise<ReportConfig[]> {
-  const res = await fetch('http://localhost:3001/reports', {
-    headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
-  });
-  if (!res.ok) throw new Error('Failed to fetch reports');
-  return res.json();
+  const { data } = await api.get('/reports');
+  return data;
 }
 
-export async function createReport(data: any): Promise<ReportConfig> {
-  const res = await fetch('http://localhost:3001/reports', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-    },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.message || 'Failed to create report');
-  }
-  return res.json();
+export async function createReport(payload: any): Promise<ReportConfig> {
+  const { data } = await api.post('/reports', payload);
+  return data;
 }
 
 export async function deleteReport(id: string): Promise<void> {
-  const res = await fetch(`http://localhost:3001/reports/${id}`, {
-    method: 'DELETE',
-    headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
-  });
-  if (!res.ok) throw new Error('Failed to delete report');
+  await api.delete(`/reports/${id}`);
 }
 
 export async function executeReport(id: string): Promise<void> {
-  const res = await fetch(`http://localhost:3001/reports/${id}/execute`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
-  });
-  if (!res.ok) throw new Error('Failed to trigger report execution');
+  await api.post(`/reports/${id}/execute`);
+}
+
+export async function updateReport(id: string, payload: any): Promise<ReportConfig> {
+  const { data } = await api.put(`/reports/${id}`, payload);
+  return data;
 }

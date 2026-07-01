@@ -1,12 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-
-function getHeaders() {
-  const token = localStorage.getItem("access_token");
-  return {
-    "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
+import api from './axios';
 
 export interface CanonicalModel {
   id: string;
@@ -16,9 +8,6 @@ export interface CanonicalModel {
 }
 
 export const getCanonicalModels = async (): Promise<CanonicalModel[]> => {
-  const response = await fetch(`${API_URL}/canonical-models`, {
-    headers: getHeaders(),
-  });
-  if (!response.ok) throw new Error("Failed to fetch canonical models");
-  return response.json();
+  const { data } = await api.get('/canonical-models');
+  return data;
 };

@@ -7,6 +7,7 @@ import {
   UseGuards,
   Get,
   Request,
+  Param,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
@@ -25,6 +26,11 @@ export class AuthController {
   @Post('login')
   async login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
+  }
+
+  @Get('invite/:token')
+  async getInviteDetails(@Param('token') token: string) {
+    return this.authService.getInviteDetails(token);
   }
 
   @UseGuards(AuthGuard('jwt'))

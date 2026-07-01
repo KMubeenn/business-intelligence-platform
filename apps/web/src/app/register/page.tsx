@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
@@ -16,9 +16,35 @@ export default function RegisterForm() {
     email: "",
     password: "",
     organizationName: "",
+    inviteToken: "",
   })
   const [error, setError] = useState("")
+  const [hasInvite, setHasInvite] = useState(false)
   const router = useRouter()
+
+  const [inviteOrgName, setInviteOrgName] = useState("")
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const invite = searchParams.get("invite");
+    if (invite) {
+      setHasInvite(true);
+      setFormData(prev => ({ ...prev, inviteToken: invite }));
+      
+      // Fetch invite details
+      fetch(`http://localhost:3001/auth/invite/${invite}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.email) {
+            setFormData(prev => ({ ...prev, email: data.email }));
+          }
+          if (data.organizationName) {
+            setInviteOrgName(data.organizationName);
+          }
+        })
+        .catch(err => console.error("Failed to fetch invite details", err));
+    }
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value })
@@ -104,16 +130,18 @@ export default function RegisterForm() {
               </div>
             </div>
             
-            <div className="grid gap-2">
-              <Label htmlFor="organizationName" className="text-foreground font-medium">Organization Name</Label>
-              <Input
-                id="organizationName"
-                placeholder="Acme Corp"
-                required
-                onChange={handleChange}
-                className="bg-background border-input focus-visible:ring-ring rounded-md"
-              />
-            </div>
+            {!hasInvite && (
+              <div className="grid gap-2">
+                <Label htmlFor="organizationName" className="text-foreground font-medium">Organization Name</Label>
+                <Input 
+                  id="organizationName" 
+                  placeholder="Acme Corp" 
+                  required 
+                  onChange={handleChange}
+                  className="bg-background border-input focus-visible:ring-ring rounded-md" 
+                />
+              </div>
+            )}
             
             <div className="grid gap-2">
               <Label htmlFor="email" className="text-foreground font-medium">Email</Label>
@@ -122,9 +150,16 @@ export default function RegisterForm() {
                 type="email"
                 placeholder="m@example.com"
                 required
+                value={formData.email}
+                disabled={hasInvite}
                 onChange={handleChange}
-                className="bg-background border-input focus-visible:ring-ring rounded-md"
+                className="bg-background border-input focus-visible:ring-ring rounded-md disabled:opacity-75 disabled:bg-muted"
               />
+              {hasInvite && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  You have been invited to join <strong className="text-foreground">{inviteOrgName || "this organization"}</strong>.
+                </p>
+              )}
             </div>
             
             <div className="grid gap-2">

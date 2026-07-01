@@ -1,12 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-
-function getHeaders() {
-  const token = localStorage.getItem("access_token");
-  return {
-    "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
+import api from './axios';
 
 export interface ConnectorHealth {
   id: string;
@@ -51,21 +43,13 @@ export interface ExplorerResult {
 }
 
 export const getPipelineOverview = async (): Promise<PipelineOverview> => {
-  const res = await fetch(`${API_URL}/analytics/pipeline-overview`, {
-    headers: getHeaders(),
-    cache: 'no-store',
-  });
-  if (!res.ok) throw new Error("Failed to fetch pipeline overview");
-  return res.json();
+  const { data } = await api.get('/analytics/pipeline-overview');
+  return data;
 };
 
 export const getSourceDetail = async (sourceId: string): Promise<SourceDetail> => {
-  const res = await fetch(`${API_URL}/analytics/source-detail?sourceId=${sourceId}`, {
-    headers: getHeaders(),
-    cache: 'no-store',
-  });
-  if (!res.ok) throw new Error("Failed to fetch source detail");
-  return res.json();
+  const { data } = await api.get(`/analytics/source-detail?sourceId=${sourceId}`);
+  return data;
 };
 
 export const getExplorerData = async (
@@ -76,10 +60,7 @@ export const getExplorerData = async (
 ): Promise<ExplorerResult> => {
   const params = new URLSearchParams({ modelId, page: String(page), pageSize: String(pageSize) });
   if (source) params.append('source', source);
-  const res = await fetch(`${API_URL}/analytics/explorer?${params}`, {
-    headers: getHeaders(),
-    cache: 'no-store',
-  });
-  if (!res.ok) throw new Error("Failed to fetch explorer data");
-  return res.json();
+  
+  const { data } = await api.get(`/analytics/explorer?${params}`);
+  return data;
 };

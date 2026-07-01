@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getReports, createReport, deleteReport, executeReport, ReportConfig } from "@/lib/api/reports";
+import { getReports, createReport, updateReport, deleteReport, executeReport, ReportConfig } from "@/lib/api/reports";
 import { getCanonicalModels } from "@/lib/api/data-sources";
-import { Plus, Play, Trash2, FileText, CheckCircle2, Clock, AlertCircle, Calendar, Users } from "lucide-react";
+import { getReportTemplates, ReportTemplate } from "@/lib/api/report-templates";
+import { Plus, Play, Trash2, FileText, CheckCircle2, Clock, AlertCircle, Calendar, Users, Edit } from "lucide-react";
+import { useRole } from "@/hooks/useRole";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -18,7 +20,10 @@ export default function ReportsPage() {
   const [uiError, setUiError] = useState<string | null>(null);
   const [uiSuccess, setUiSuccess] = useState<string | null>(null);
 
+  const { canManageReports } = useRole();
+
   // Form state
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [query, setQuery] = useState("");
   const [cron, setCron] = useState("0 19 * * *");
@@ -26,6 +31,8 @@ export default function ReportsPage() {
   const [emails, setEmails] = useState("");
   const [availableModels, setAvailableModels] = useState<any[]>([]);
   const [selectedModels, setSelectedModels] = useState<string[]>([]);
+  const [availableTemplates, setAvailableTemplates] = useState<ReportTemplate[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
 
   const fetchReports = async () => {
     try {
@@ -33,6 +40,18 @@ export default function ReportsPage() {
       setReports(data);
       const modelsData = await getCanonicalModels();
       setAvailableModels(modelsData);
+      
+      try {
+        const tplData = await getReportTemplates();
+        setAvailableTemplates(tplData);
+        if (tplData.length > 0) {
+          const defaultTpl = tplData.find(t => t.isDefault);
+          setSelectedTemplate(defaultTpl ? defaultTpl.id : tplData[0].id);
+        }
+      } catch (e) {
+        // user might not have access or failed to fetch
+      }
+      
       setLoading(false);
     } catch (err) {
       setUiError("Failed to fetch reports. Please ensure the backend is running.");
@@ -55,24 +74,60 @@ export default function ReportsPage() {
     }
   }, [reports]);
 
-  const handleCreate = async () => {
+  const handleNewClick = () => {
+    setEditingId(null);
+    setName("");
+    setQuery("");
+    setCron("0 19 * * *");
+    setCronPreset("0 19 * * *");
+    setEmails("");
+    setSelectedModels([]);
+    if (availableTemplates.length > 0) {
+      const defaultTpl = availableTemplates.find(t => t.isDefault);
+      setSelectedTemplate(defaultTpl ? defaultTpl.id : availableTemplates[0].id);
+    }
+    setIsModalOpen(true);
+  };
+
+  const handleEditClick = (report: ReportConfig) => {
+    setEditingId(report.id);
+    setName(report.name);
+    setQuery(report.userQuery);
+    setCron(report.cronSchedule);
+    setCronPreset(report.cronSchedule);
+    setEmails(report.targetEmails.join(', '));
+    setSelectedModels(report.includedModels);
+    setSelectedTemplate(report.templateId || "");
+    setIsModalOpen(true);
+  };
+
+  const handleSave = async () => {
     setUiError(null);
     setUiSuccess(null);
     try {
       if (selectedModels.length === 0) throw new Error("Please select at least one data model.");
       
-      await createReport({
+      const payload = {
         name,
         userQuery: query,
         cronSchedule: cronPreset === 'custom' ? cron : cronPreset,
         targetEmails: emails.split(',').map(e => e.trim()).filter(e => e),
         includedModels: selectedModels,
-      });
+        templateId: selectedTemplate || undefined,
+      };
+
+      if (editingId) {
+        await updateReport(editingId, payload);
+        setUiSuccess("Report updated successfully!");
+      } else {
+        await createReport(payload);
+        setUiSuccess("Report scheduled successfully!");
+      }
+
       setIsModalOpen(false);
       setRefreshKey(k => k + 1);
-      setUiSuccess("Report scheduled successfully!");
     } catch (err: any) {
-      setUiError(err.message || "Failed to create report.");
+      setUiError(err.message || "Failed to save report.");
     }
   };
 
@@ -110,9 +165,11 @@ export default function ReportsPage() {
           </h1>
           <p className="text-muted-foreground mt-1">Schedule and generate beautiful PDF reports automatically.</p>
         </div>
-        <Button onClick={() => setIsModalOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2">
-          <Plus className="h-4 w-4" /> New Report
-        </Button>
+        {canManageReports && (
+          <Button onClick={handleNewClick} className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2">
+            <Plus className="h-4 w-4" /> New Report
+          </Button>
+        )}
       </div>
 
       {uiError && (
@@ -134,7 +191,9 @@ export default function ReportsPage() {
           <FileText className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
           <h3 className="text-lg font-medium text-foreground">No reports configured</h3>
           <p className="text-muted-foreground mb-6">Create your first automated AI report to get started.</p>
-          <Button variant="outline" onClick={() => setIsModalOpen(true)}>Create Report</Button>
+          {canManageReports && (
+            <Button variant="outline" onClick={handleNewClick}>Create Report</Button>
+          )}
         </div>
       ) : (
         <div className="grid gap-6">
@@ -193,12 +252,19 @@ export default function ReportsPage() {
               </div>
 
               <div className="flex md:flex-col gap-2 justify-start md:border-l md:border-border/50 md:pl-6">
-                <Button variant="outline" size="sm" onClick={() => handleExecute(report.id)} className="w-full justify-start">
-                  <Play className="h-4 w-4 mr-2 text-indigo-400" /> Run Now
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => handleDelete(report.id)} className="w-full justify-start text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20">
-                  <Trash2 className="h-4 w-4 mr-2" /> Delete
-                </Button>
+                {canManageReports && (
+                  <>
+                    <Button variant="outline" size="sm" onClick={() => handleExecute(report.id)} className="w-full justify-start">
+                      <Play className="h-4 w-4 mr-2 text-indigo-400" /> Run Now
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => handleEditClick(report)} className="w-full justify-start">
+                      <Edit className="h-4 w-4 mr-2" /> Edit
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => handleDelete(report.id)} className="w-full justify-start text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20">
+                      <Trash2 className="h-4 w-4 mr-2" /> Delete
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           ))}
@@ -208,7 +274,7 @@ export default function ReportsPage() {
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-[550px] bg-card border-border">
           <DialogHeader>
-            <DialogTitle>Create Automated Report</DialogTitle>
+            <DialogTitle>{editingId ? "Edit Report" : "Create Automated Report"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
@@ -274,14 +340,32 @@ export default function ReportsPage() {
                 </div>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>Target Emails</Label>
-              <Input placeholder="boss@company.com, team@company.com" value={emails} onChange={(e: any) => setEmails(e.target.value)} />
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Report Template</Label>
+                <select
+                  value={selectedTemplate}
+                  onChange={(e) => setSelectedTemplate(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="">Default Org Styling</option>
+                  {availableTemplates.map(t => (
+                    <option key={t.id} value={t.id}>{t.name} {t.isDefault ? '(Default)' : ''}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label>Target Emails</Label>
+                <Input placeholder="boss@company.com, team@company.com" value={emails} onChange={(e: any) => setEmails(e.target.value)} />
+              </div>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreate} className="bg-indigo-600 hover:bg-indigo-700 text-white">Create Report</Button>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+            <Button onClick={handleSave} className="bg-indigo-600 hover:bg-indigo-700 text-white">
+              {editingId ? "Save Changes" : "Schedule Report"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

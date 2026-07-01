@@ -10,6 +10,7 @@ import {
   Database,
   TableProperties
 } from "lucide-react";
+import { useRole } from "@/hooks/useRole";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { DataExplorerDialog } from "@/components/data-explorer-dialog";
@@ -43,6 +44,8 @@ export default function DataSourceDetailPage({ params }: { params: Promise<{ id:
   const router = useRouter();
 
   const [dataSource, setDataSource] = useState<DataSource | null>(null);
+  
+  const { canManageDataSources, isViewer } = useRole();
   const [enabledTables, setEnabledTables] = useState<RawTable[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -164,25 +167,27 @@ export default function DataSourceDetailPage({ params }: { params: Promise<{ id:
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              onClick={handleTestConnection} 
-              disabled={actionLoading}
-              className="bg-card text-foreground border-border hover:bg-accent"
-            >
-              <Activity className="h-4 w-4 mr-2 text-muted-foreground" />
-              Test Connection
-            </Button>
-            <Button 
-              onClick={handleDiscoverSchema} 
-              disabled={actionLoading}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              <RefreshCcw className={`h-4 w-4 mr-2 ${actionLoading ? 'animate-spin' : ''}`} />
-              Discover Schema
-            </Button>
-          </div>
+          {canManageDataSources && (
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                onClick={handleTestConnection} 
+                disabled={actionLoading}
+                className="bg-card text-foreground border-border hover:bg-accent"
+              >
+                <Activity className="h-4 w-4 mr-2 text-muted-foreground" />
+                Test Connection
+              </Button>
+              <Button 
+                onClick={handleDiscoverSchema} 
+                disabled={actionLoading}
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                <RefreshCcw className={`h-4 w-4 mr-2 ${actionLoading ? 'animate-spin' : ''}`} />
+                Discover Schema
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -238,35 +243,46 @@ export default function DataSourceDetailPage({ params }: { params: Promise<{ id:
                     <div className="flex justify-end gap-4 items-center">
                       {isEnabled && (
                         <>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            className="h-8 text-primary hover:text-primary hover:bg-primary/10"
-                            onClick={() => {
-                              setMappingTable(tableName);
-                              setMappingColumns(columns);
-                              setMappingOpen(true);
-                            }}
-                          >
-                            Map Fields
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            className="h-8 text-muted-foreground hover:text-foreground"
-                            onClick={() => {
-                              setExplorerTable(tableName);
-                              setExplorerOpen(true);
-                            }}
-                          >
-                            View Data
-                          </Button>
+                          {canManageDataSources && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              className="h-8 text-primary hover:text-primary hover:bg-primary/10"
+                              onClick={() => {
+                                setMappingTable(tableName);
+                                setMappingColumns(columns);
+                                setMappingOpen(true);
+                              }}
+                            >
+                              Map Fields
+                            </Button>
+                          )}
+                          {!isViewer && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              className="h-8 text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50"
+                              onClick={() => {
+                                setExplorerTable(tableName);
+                                setExplorerOpen(true);
+                              }}
+                            >
+                              Data Explorer
+                            </Button>
+                          )}
                         </>
                       )}
-                      <Switch 
-                        checked={isEnabled} 
-                        onCheckedChange={(checked) => handleToggleSync(tableName, checked)} 
-                      />
+                      {canManageDataSources && (
+                        <Switch 
+                          checked={isEnabled} 
+                          onCheckedChange={(checked) => handleToggleSync(tableName, checked)} 
+                        />
+                      )}
+                      {!canManageDataSources && (
+                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          {isEnabled ? 'Yes' : 'No'}
+                        </span>
+                      )}
                     </div>
                   </div>
                 );

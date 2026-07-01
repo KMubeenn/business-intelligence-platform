@@ -26,6 +26,7 @@ export class ReportsProcessor extends WorkerHost {
       // 1. Fetch Config
       const config = await this.prisma.reportConfig.findUnique({
         where: { id: configId },
+        include: { organization: true, template: true },
       });
 
       if (!config) throw new Error('Report config not found');
@@ -41,14 +42,88 @@ export class ReportsProcessor extends WorkerHost {
           include: {
             records: {
               where: { status: 'MAPPED' },
-              take: 100
+              take: 500
             }
           }
         });
 
-        dataContext = models.map(m => {
-          return `### Model: ${m.name}\n` + m.records.map(r => JSON.stringify(r.data)).join('\n');
-        }).join('\n\n');
+        // 2a. Pre-Filtering step using AI
+        for (const m of models) {
+          let availableFields = 'Unknown';
+          if (m.schemaJson) {
+            try {
+              const parsedSchema = typeof m.schemaJson === 'string' ? JSON.parse(m.schemaJson) : m.schemaJson;
+              if (parsedSchema.properties) availableFields = Object.keys(parsedSchema.properties).join(', ');
+            } catch (e) {}
+          }
+          
+          const filterPrompt = `
+You are a strict data filtering engine. 
+User Query: "${config.userQuery}"
+Available Fields: [${availableFields}]
+
+Analyze the user query and extract any explicit numerical or logical filtering conditions.
+Return ONLY a valid JSON array of filter objects. 
+Format: [{"field": "fieldName", "operator": "<", "value": 50}]
+Supported operators: ">", "<", ">=", "<=", "==", "!="
+If no filters apply, return []. Do not include markdown formatting or backticks.
+`;
+
+          let parsedFilters: any[] = [];
+          try {
+            const filterResponse = await this.ai.models.generateContent({
+              model: 'gemini-2.5-flash',
+              contents: filterPrompt,
+            });
+            let txt = filterResponse.text || '[]';
+            txt = txt.replace(/```json/gi, '').replace(/```/g, '').trim();
+            parsedFilters = JSON.parse(txt);
+          } catch (e: any) {
+            this.logger.warn(`Failed to parse AI filters: ${e.message}`);
+          }
+
+          // Apply filters in memory
+          let filteredRecords = m.records;
+          if (Array.isArray(parsedFilters) && parsedFilters.length > 0) {
+            this.logger.log(`Applying filters: ${JSON.stringify(parsedFilters)}`);
+            filteredRecords = filteredRecords.filter(r => {
+              const data: any = r.data;
+              for (const f of parsedFilters) {
+                // Fuzzy match field if exact doesn't exist
+                let val = data[f.field];
+                if (val === undefined) {
+                  const lowerSearch = f.field.toLowerCase();
+                  for (const key of Object.keys(data)) {
+                    if (key.toLowerCase().includes(lowerSearch) || lowerSearch.includes(key.toLowerCase())) {
+                      val = data[key];
+                      break;
+                    }
+                  }
+                }
+                
+                let target = f.value;
+                
+                if (['<', '>', '<=', '>='].includes(f.operator)) {
+                  val = Number(val);
+                  target = Number(target);
+                  if (isNaN(val) || isNaN(target)) return false; // Fail if it cannot be evaluated
+                }
+
+                switch (f.operator) {
+                  case '<': if (!(val < target)) return false; break;
+                  case '>': if (!(val > target)) return false; break;
+                  case '<=': if (!(val <= target)) return false; break;
+                  case '>=': if (!(val >= target)) return false; break;
+                  case '==': if (!(val == target)) return false; break;
+                  case '!=': if (!(val != target)) return false; break;
+                }
+              }
+              return true;
+            });
+          }
+
+          dataContext += `### Model: ${m.name}\n` + filteredRecords.map(r => JSON.stringify(r.data)).join('\n') + '\n\n';
+        }
       }
 
       // 3. Call AI
@@ -62,13 +137,19 @@ ${config.userQuery}
 DATA CONTEXT (JSON records):
 ${dataContext}
 
-Please generate a professional, insightful report. Output your response entirely in beautifully formatted HTML.
+Please generate a professional, insightful report based EXACTLY on the records provided above.
+NOTE: The data provided has already been strictly pre-filtered mathematically according to the user's query. DO NOT apply any additional numerical filtering. Treat every record provided as matching the user's criteria.
+
+Output your response entirely in beautifully formatted HTML.
 CRITICAL INSTRUCTIONS FOR PDF GENERATION:
-1. Do NOT use a dark theme. Use a clean white background (#ffffff) with dark text (#111111) so it prints perfectly as a PDF.
-2. Use standard fonts like 'Arial', 'Helvetica', or 'sans-serif'. Do not rely on external web fonts that might take too long to load.
-3. Ensure all content is within a container that has a max-width and margin: auto.
+1. Output your response as an HTML fragment (e.g. <div>...</div>) containing your report content.
+2. Do NOT output full <html>, <head>, or <body> tags. We will embed your output into our own branded template.
+3. Do NOT use a dark theme. Keep styling clean and professional.
 4. Do NOT use markdown backticks (e.g., \`\`\`html) around your output. Output raw HTML only.
-5. Make sure the HTML starts with <!DOCTYPE html> and contains full <html>, <head>, and <body> tags.
+5. START IMMEDIATELY with the data tables or paragraphs. ABSOLUTELY NO overall report title or <h1> heading at the top. The system template already provides the title.
+6. ABSOLUTELY NO "Report generated on" or timestamp text.
+7. NO CSS box-shadows or drop-shadows on any elements.
+8. DO NOT use any inline styles (e.g. style="...") in your HTML tables or rows. Use clean, unstyled semantic HTML (<table>, <tr>, <th>, <td>). The system provides standard corporate styling.
 `;
 
       const strategies = [
@@ -178,10 +259,173 @@ CRITICAL INSTRUCTIONS FOR PDF GENERATION:
         htmlOutput = htmlOutput.trim();
       }
 
+      // Read branding theme
+      let layout: any = {
+        primaryColor: '#3b82f6',
+        header: { logoUrl: '', logoPosition: 'left', titleText: config.name, titlePosition: 'right', showDate: true },
+        footer: { disclaimerText: 'Confidential - Internal Use Only', disclaimerPosition: 'left', signatureText: 'Generated automatically', signaturePosition: 'right', showPageNumbers: false }
+      };
+
+      if (config.template && config.template.layoutConfig) {
+        layout = config.template.layoutConfig as any;
+      }
+
+      const alignMap: any = {
+        'left': 'flex-start',
+        'center': 'center',
+        'right': 'flex-end'
+      };
+      
+      const textAlignMap: any = {
+        'left': 'left',
+        'center': 'center',
+        'right': 'right'
+      };
+
+      const brandedHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    :root {
+      --brand-color: ${layout.primaryColor};
+    }
+    body {
+      font-family: 'Arial', 'Helvetica', sans-serif;
+      background-color: #ffffff;
+      color: #111111;
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+    }
+    .page-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      min-height: 1000px;
+    }
+    .report-header {
+      position: relative;
+      border-bottom: 3px solid var(--brand-color);
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+      min-height: 55px;
+    }
+    .report-logo {
+      max-height: 50px;
+      max-width: 200px;
+      object-fit: contain;
+    }
+    .report-title {
+      color: var(--brand-color);
+      margin: 0;
+      font-size: 24px;
+    }
+    .report-date {
+      font-size: 12px;
+      color: #666;
+      margin-top: 5px;
+    }
+    .report-footer {
+      margin-top: auto;
+      padding-top: 40px;
+      border-top: 1px solid #eee;
+      position: relative;
+      min-height: 100px;
+    }
+    .signature {
+      font-style: italic;
+      color: #444;
+      border-top: 1px solid #111;
+      padding-top: 5px;
+      min-width: 200px;
+      font-size: 14px;
+    }
+    .disclaimer {
+      font-size: 10px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    /* Simple styling overrides for AI generated content */
+    main {
+      flex: 1;
+    }
+    main h1, main h2, main h3 {
+      color: var(--brand-color);
+    }
+    main table {
+      width: 100%;
+      border-collapse: collapse !important;
+      margin: 20px 0 !important;
+      background-color: transparent !important;
+    }
+    main th {
+      background-color: #f3f4f6 !important;
+      color: #111 !important;
+      border-bottom: 2px solid var(--brand-color) !important;
+      padding: 10px !important;
+      text-align: left !important;
+      font-weight: 600 !important;
+    }
+    main td {
+      padding: 10px !important;
+      border-bottom: 1px solid #e5e7eb !important;
+      background-color: transparent !important;
+      color: #333 !important;
+    }
+    main tr {
+      background-color: transparent !important;
+    }
+    
+    .absolute-left { position: absolute; left: 0; top: 0; }
+    .absolute-center { position: absolute; left: 50%; transform: translateX(-50%); top: 0; text-align: center; }
+    .absolute-right { position: absolute; right: 0; top: 0; text-align: right; }
+    
+    .footer-left { position: absolute; left: 0; bottom: 0; }
+    .footer-center { position: absolute; left: 50%; transform: translateX(-50%); bottom: 0; text-align: center; }
+    .footer-right { position: absolute; right: 0; bottom: 0; text-align: right; }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <header class="report-header">
+      <div class="absolute-${layout.header.logoPosition}">
+        ${layout.header.logoUrl ? `<img src="${layout.header.logoUrl}" class="report-logo" alt="Company Logo" />` : `<div style="font-size: 24px; font-weight: 800; color: #1f2937; letter-spacing: -0.5px; margin-top: -2px;">${config.organization?.name || 'Report'}</div>`}
+      </div>
+      <div class="absolute-${layout.header.titlePosition}">
+        <h1 class="report-title">${layout.header.titleText || config.name}</h1>
+        ${layout.header.showDate ? `<div class="report-date">${new Date().toLocaleDateString()}</div>` : ''}
+      </div>
+    </header>
+
+    <main>
+      ${htmlOutput}
+    </main>
+
+    <footer class="report-footer">
+      <div class="footer-${layout.footer.signaturePosition}">
+        <div class="signature">
+          ${layout.footer.signatureText}
+        </div>
+      </div>
+      <div class="footer-${layout.footer.disclaimerPosition}">
+        <div class="disclaimer">
+          ${layout.footer.disclaimerText}
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
+      `;
+
       // 4. Generate PDF using Puppeteer
       const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
       const page = await browser.newPage();
-      await page.setContent(htmlOutput, { waitUntil: 'domcontentloaded', timeout: 10000 });
+      await page.setContent(brandedHtml, { waitUntil: 'domcontentloaded', timeout: 10000 });
       const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
       await browser.close();
 

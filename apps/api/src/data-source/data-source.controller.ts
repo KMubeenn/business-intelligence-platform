@@ -20,12 +20,16 @@ import { CreateDataSourceDto } from './dto/create-data-source.dto';
 import { UpdateDataSourceDto } from './dto/update-data-source.dto';
 import { AuthGuard } from '@nestjs/passport';
 
-@UseGuards(AuthGuard('jwt'))
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+
+@UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('data-sources')
 export class DataSourceController {
   constructor(private readonly dataSourceService: DataSourceService) {}
 
   @Post('upload-excel')
+  @Roles('OWNER', 'ADMIN')
   @UseInterceptors(FileInterceptor('file', {
     storage: diskStorage({
       destination: './uploads',
@@ -55,6 +59,7 @@ export class DataSourceController {
   }
 
   @Post()
+  @Roles('OWNER', 'ADMIN')
   create(
     @Body() createDataSourceDto: CreateDataSourceDto,
     @Request() req: { user: { organizationId: string } },
@@ -79,6 +84,7 @@ export class DataSourceController {
   }
 
   @Put(':id')
+  @Roles('OWNER', 'ADMIN')
   update(
     @Param('id') id: string,
     @Body() updateDataSourceDto: UpdateDataSourceDto,
@@ -92,6 +98,7 @@ export class DataSourceController {
   }
 
   @Delete(':id')
+  @Roles('OWNER', 'ADMIN')
   remove(
     @Param('id') id: string,
     @Request() req: { user: { organizationId: string } },
@@ -100,6 +107,7 @@ export class DataSourceController {
   }
 
   @Post(':id/test')
+  @Roles('OWNER', 'ADMIN')
   testConnection(
     @Param('id') id: string,
     @Request() req: { user: { organizationId: string } },
@@ -108,6 +116,7 @@ export class DataSourceController {
   }
 
   @Post(':id/schema/discover')
+  @Roles('OWNER', 'ADMIN')
   discoverSchema(
     @Param('id') id: string,
     @Request() req: { user: { organizationId: string } },
@@ -136,6 +145,7 @@ export class DataSourceController {
   }
 
   @Post(':id/tables')
+  @Roles('OWNER', 'ADMIN')
   enableTableSync(
     @Param('id') id: string,
     @Body('tableName') tableName: string,
@@ -145,6 +155,7 @@ export class DataSourceController {
   }
 
   @Delete(':id/tables/:tableName')
+  @Roles('OWNER', 'ADMIN')
   disableTableSync(
     @Param('id') id: string,
     @Param('tableName') tableName: string,
@@ -172,6 +183,7 @@ export class DataSourceController {
   }
 
   @Put(':id/tables/:tableName/mappings')
+  @Roles('OWNER', 'ADMIN')
   updateFieldMapping(
     @Param('id') id: string,
     @Param('tableName') tableName: string,

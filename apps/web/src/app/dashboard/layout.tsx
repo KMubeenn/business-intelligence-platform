@@ -45,7 +45,8 @@ export default function DashboardLayout({
     { href: '/dashboard/data-sources', label: 'Data Sources',    icon: Package,         exact: false },
     { href: '/dashboard/data-explorer',label: 'Data Explorer',   icon: TableProperties, exact: false },
     { href: '/dashboard/reports',      label: 'AI Reports',      icon: FileText,        exact: false },
-    { href: '#',                        label: 'Team',            icon: Users,           exact: false },
+    { href: '/dashboard/templates',    label: 'Templates',       icon: Package2,        exact: false },
+    { href: '/dashboard/settings',     label: 'Team Settings',   icon: Users,           exact: false },
   ];
 
   return (

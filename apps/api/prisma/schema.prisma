@@ -11,11 +11,21 @@ model Organization {
   id        String   @id @default(uuid())
   name      String
   createdAt DateTime @default(now())
-  updatedAt   DateTime     @updatedAt
+  updatedAt DateTime @updatedAt
+
   users           User[]
   dataSources     DataSource[]
   canonicalModels CanonicalModel[]
   reportConfigs   ReportConfig[]
+  teamInvites     TeamInvite[]
+  reportTemplates ReportTemplate[]
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
 }
 
 model User {
@@ -24,10 +34,24 @@ model User {
   password       String
   firstName      String
   lastName       String
+  role           Role         @default(MEMBER)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
+}
+
+model TeamInvite {
+  id             String       @id @default(uuid())
+  email          String
+  role           Role         @default(MEMBER)
+  token          String       @unique
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  expiresAt      DateTime
+  createdAt      DateTime     @default(now())
+
+  @@unique([organizationId, email])
 }
 
 enum DataSourceType {
@@ -129,10 +153,25 @@ model CanonicalRecord {
   createdAt        DateTime              @default(now())
 }
 
+model ReportTemplate {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  name           String
+  isDefault      Boolean      @default(false)
+  layoutConfig   Json
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  reportConfigs  ReportConfig[]
+}
+
 model ReportConfig {
   id               String            @id @default(uuid())
   organizationId   String
   organization     Organization      @relation(fields: [organizationId], references: [id])
+  templateId       String?
+  template         ReportTemplate?   @relation(fields: [templateId], references: [id])
   name             String
   userQuery        String
   cronSchedule     String

@@ -54,6 +54,7 @@ export class ReportsService {
         cronSchedule: data.cronSchedule,
         targetEmails: data.targetEmails,
         includedModels: data.includedModels,
+        templateId: data.templateId,
         isActive: data.isActive ?? true,
       },
     });
@@ -76,6 +77,7 @@ export class ReportsService {
         cronSchedule: data.cronSchedule,
         targetEmails: data.targetEmails,
         includedModels: data.includedModels,
+        templateId: data.templateId,
         isActive: data.isActive,
       },
     });

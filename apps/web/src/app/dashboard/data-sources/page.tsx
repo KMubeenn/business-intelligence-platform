@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Plus, Settings2, Trash2, Database, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getDataSources, deleteDataSource } from "@/lib/api/data-sources";
+import { useRole } from "@/hooks/useRole";
 
 interface DataSource {
   id: string;
@@ -18,6 +19,7 @@ export default function DataSourcesPage() {
   const [dataSources, setDataSources] = useState<DataSource[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { canManageDataSources } = useRole();
 
   const loadDataSources = async () => {
     try {
@@ -52,12 +54,14 @@ export default function DataSourcesPage() {
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Data Sources</h1>
           <p className="text-muted-foreground mt-1">Manage your database connections and integration settings.</p>
         </div>
-        <Link href="/dashboard/data-sources/new">
-          <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md">
-            <Plus className="h-4 w-4" />
-            New Connection
-          </Button>
-        </Link>
+        {canManageDataSources && (
+          <Link href="/dashboard/data-sources/new">
+            <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md">
+              <Plus className="h-4 w-4" />
+              New Connection
+            </Button>
+          </Link>
+        )}
       </div>
 
       <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
@@ -74,9 +78,11 @@ export default function DataSourcesPage() {
             <p className="text-sm text-muted-foreground mt-1 mb-6 max-w-sm">
               Connect a database or API integration to start syncing your data to the platform.
             </p>
-            <Link href="/dashboard/data-sources/new">
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md">Connect Data Source</Button>
-            </Link>
+            {canManageDataSources && (
+              <Link href="/dashboard/data-sources/new">
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md">Connect Data Source</Button>
+              </Link>
+            )}
           </div>
         ) : (
           <div className="w-full">
@@ -115,14 +121,16 @@ export default function DataSourcesPage() {
                         Configure
                       </Button>
                     </Link>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(ds.id)}
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {canManageDataSources && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(ds.id)}
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
