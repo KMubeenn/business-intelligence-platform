@@ -98,8 +98,11 @@ export function FieldMappingDialog({
             <ArrowRightLeft className="h-5 w-5 text-primary" />
             Map Fields: <span className="font-mono bg-muted px-2 py-0.5 rounded text-sm text-foreground">{tableName}</span>
           </DialogTitle>
-          <DialogDescription>
-            Map your raw database columns to the standard Canonical Schema.
+          <DialogDescription className="space-y-2">
+            <p>Map your raw database columns to the standard Canonical Schema.</p>
+            <p className="text-xs bg-primary/10 text-primary p-2 rounded-md border border-primary/20">
+              <strong>Tip for Excel Files:</strong> By mapping inconsistently named spreadsheet columns (e.g. &quot;CustID&quot;, &quot;Client Number&quot;) to a unified Golden Schema, the platform automatically standardizes your data for reporting.
+            </p>
           </DialogDescription>
         </DialogHeader>
 

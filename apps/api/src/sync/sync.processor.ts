@@ -58,12 +58,38 @@ export class SyncProcessor extends WorkerHost {
           }
 
           if (!extId) {
-            if (rowData.id) extId = String(rowData.id);
-            else if (rowData.uid) extId = String(rowData.uid);
-            else if (rowData.uuid) extId = String(rowData.uuid);
-            else if (rowData.sku) extId = String(rowData.sku);
-            else if (rowData.customer_id) extId = String(rowData.customer_id);
-            else {
+            // Priority 1: Common standard ID fields
+            const standardIdKeys = ['id', '_id', 'uid', 'uuid'];
+            for (const key of standardIdKeys) {
+              if (rowData[key] !== undefined) {
+                extId = String(rowData[key]);
+                break;
+              }
+            }
+            
+            // Priority 2: Table-specific ID fields (e.g., 'order_id' or 'orderid' or 'orderId')
+            if (!extId) {
+              const tableNameLower = rawTable.tableName.toLowerCase();
+              // Check singular forms as well (e.g., 'Orders' -> 'order_id')
+              const singularTableName = tableNameLower.endsWith('s') ? tableNameLower.slice(0, -1) : tableNameLower;
+              
+              const specificIdKeys = [
+                `${tableNameLower}_id`, `${tableNameLower}id`,
+                `${singularTableName}_id`, `${singularTableName}id`
+              ];
+              
+              // Map all object keys to lowercase to check case-insensitively
+              const rowKeys = Object.keys(rowData);
+              for (const rowKey of rowKeys) {
+                if (specificIdKeys.includes(rowKey.toLowerCase())) {
+                  extId = String(rowData[rowKey]);
+                  break;
+                }
+              }
+            }
+            
+            // Priority 3: Fallback to Hash of the row (safest for tables without PKs)
+            if (!extId) {
               const crypto = require('crypto');
               extId = crypto.createHash('sha256').update(JSON.stringify(rowData)).digest('hex');
             }

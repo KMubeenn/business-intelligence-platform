@@ -21,8 +21,10 @@ import {
   discoverSchema, 
   getEnabledTables, 
   enableTableSync, 
-  disableTableSync 
+  disableTableSync,
+  updateExcelDataSource
 } from "@/lib/api/data-sources";
+import { Input } from "@/components/ui/input";
 
 interface DataSource {
   id: string;
@@ -36,6 +38,10 @@ interface DataSource {
 interface RawTable {
   id: string;
   tableName: string;
+  syncEnabled?: boolean;
+  incrementalColumn?: string | null;
+  lastSyncTimestamp?: string | null;
+  primaryKeyColumn?: string | null;
 }
 
 export default function DataSourceDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -51,6 +57,7 @@ export default function DataSourceDetailPage({ params }: { params: Promise<{ id:
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+  const [excelFile, setExcelFile] = useState<File | null>(null);
   
   // Data Explorer State
   const [explorerOpen, setExplorerOpen] = useState(false);
@@ -109,6 +116,23 @@ export default function DataSourceDetailPage({ params }: { params: Promise<{ id:
     }
   };
 
+  const handleUpdateExcel = async () => {
+    if (!excelFile) return;
+    setActionLoading(true);
+    setError("");
+    setSuccessMsg("");
+    try {
+      await updateExcelDataSource(id, excelFile);
+      setSuccessMsg("Excel file updated successfully!");
+      setExcelFile(null);
+      // Re-discover schema in case it changed
+      await handleDiscoverSchema();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
+      setActionLoading(false);
+    }
+  };
+
   const handleToggleSync = async (tableName: string, isEnabled: boolean) => {
     try {
       if (isEnabled) {
@@ -126,6 +150,23 @@ export default function DataSourceDetailPage({ params }: { params: Promise<{ id:
     } catch (err: unknown) {
       alert("Failed to toggle sync: " + (err instanceof Error ? err.message : String(err)));
       // Revert on failure
+      const tablesData = await getEnabledTables(id);
+      setEnabledTables(tablesData);
+    }
+  };
+
+  const handleSetPrimaryKey = async (tableName: string, primaryKeyColumn: string) => {
+    try {
+      const { updateTablePrimaryKey } = await import('@/lib/api/data-sources');
+      const pkValue = primaryKeyColumn === 'NONE' ? null : primaryKeyColumn;
+      await updateTablePrimaryKey(id, tableName, pkValue);
+      // Update optimistic state
+      setEnabledTables(prev => 
+        prev.map(t => t.tableName === tableName ? { ...t, primaryKeyColumn: pkValue } : t)
+      );
+    } catch (err: unknown) {
+      alert("Failed to set primary key: " + (err instanceof Error ? err.message : String(err)));
+      // Reload on failure
       const tablesData = await getEnabledTables(id);
       setEnabledTables(tablesData);
     }
@@ -169,15 +210,17 @@ export default function DataSourceDetailPage({ params }: { params: Promise<{ id:
           </div>
           {canManageDataSources && (
             <div className="flex items-center gap-2">
-              <Button 
-                variant="outline" 
-                onClick={handleTestConnection} 
-                disabled={actionLoading}
-                className="bg-card text-foreground border-border hover:bg-accent"
-              >
-                <Activity className="h-4 w-4 mr-2 text-muted-foreground" />
-                Test Connection
-              </Button>
+              {dataSource.type !== 'EXCEL' && (
+                <Button 
+                  variant="outline" 
+                  onClick={handleTestConnection} 
+                  disabled={actionLoading}
+                  className="bg-card text-foreground border-border hover:bg-accent"
+                >
+                  <Activity className="h-4 w-4 mr-2 text-muted-foreground" />
+                  Test Connection
+                </Button>
+              )}
               <Button 
                 onClick={handleDiscoverSchema} 
                 disabled={actionLoading}
@@ -193,6 +236,33 @@ export default function DataSourceDetailPage({ params }: { params: Promise<{ id:
 
       {error && <div className="bg-red-50 text-red-600 p-4 rounded-md text-sm border border-red-100">{error}</div>}
       {successMsg && <div className="bg-emerald-50 text-emerald-700 p-4 rounded-md text-sm border border-emerald-200 font-medium">{successMsg}</div>}
+
+      {dataSource.type === 'EXCEL' && canManageDataSources && (
+        <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-lg font-semibold text-foreground">Update Excel File</h3>
+            <p className="text-sm text-muted-foreground mt-1 max-w-xl">
+              Upload a newer version of this spreadsheet to update the data snapshot. The schema will be automatically re-discovered. 
+              <strong> Note:</strong> Next time sync runs, it will completely wipe and replace the old rows with the new ones (unless you map a Primary Key).
+            </p>
+          </div>
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <Input 
+              type="file" 
+              accept=".xlsx, .xls" 
+              onChange={(e) => setExcelFile(e.target.files?.[0] || null)} 
+              className="max-w-[250px] cursor-pointer" 
+            />
+            <Button 
+              onClick={handleUpdateExcel} 
+              disabled={!excelFile || actionLoading} 
+              className="bg-primary text-primary-foreground min-w-[140px]"
+            >
+              {actionLoading && excelFile ? 'Uploading...' : 'Upload & Replace'}
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Schema Section */}
       <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
@@ -219,35 +289,55 @@ export default function DataSourceDetailPage({ params }: { params: Promise<{ id:
           </div>
         ) : (
           <div className="w-full">
-            <div className="grid grid-cols-4 border-b border-border bg-muted/50 p-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              <div className="col-span-2">Table Name</div>
-              <div>Columns</div>
-              <div className="text-right">Sync Enabled</div>
+            <div className="grid grid-cols-12 border-b border-border bg-muted/50 p-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <div className="col-span-4">Table Name</div>
+              <div className="col-span-2">Columns</div>
+              <div className="col-span-3">Primary Key</div>
+              <div className="col-span-3 text-right">Sync Enabled</div>
             </div>
             <div className="divide-y divide-border">
               {tableNames.map((tableName) => {
                 const columns = dataSource.schemaJson![tableName] || [];
                 const isEnabled = enabledTableNames.has(tableName);
+                const rawTable = enabledTables.find(t => t.tableName === tableName);
                 
                 return (
-                  <div key={tableName} className="grid grid-cols-4 items-center p-4 text-sm hover:bg-muted/50 transition-colors">
-                    <div className="col-span-2 flex items-center gap-3">
+                  <div key={tableName} className="grid grid-cols-12 items-center p-4 text-sm hover:bg-muted/50 transition-colors">
+                    <div className="col-span-4 flex items-center gap-3">
                       <div className="h-8 w-8 rounded bg-muted border border-border flex items-center justify-center">
                         <TableProperties className="h-4 w-4 text-muted-foreground" />
                       </div>
-                      <div className="font-semibold text-foreground">{tableName}</div>
+                      <div className="font-semibold text-foreground truncate pr-2">{tableName}</div>
                     </div>
-                    <div className="text-muted-foreground font-mono text-xs">
+                    <div className="col-span-2 text-muted-foreground font-mono text-xs">
                       {columns.length} cols
                     </div>
-                    <div className="flex justify-end gap-4 items-center">
+                    <div className="col-span-3 pr-4">
+                      {isEnabled && dataSource.type === 'EXCEL' && canManageDataSources ? (
+                        <select 
+                          className="flex h-8 w-full max-w-[180px] items-center justify-between rounded-md border border-input bg-background px-3 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                          value={rawTable?.primaryKeyColumn || 'NONE'}
+                          onChange={(e) => handleSetPrimaryKey(tableName, e.target.value)}
+                        >
+                          <option value="NONE">Auto (Hash Row)</option>
+                          {columns.map((c: any) => (
+                            <option key={c.name} value={c.name}>{c.name}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <span className="text-muted-foreground text-xs font-mono">
+                          {rawTable?.primaryKeyColumn || (isEnabled ? 'Auto' : '-')}
+                        </span>
+                      )}
+                    </div>
+                    <div className="col-span-3 flex justify-end gap-2 sm:gap-4 items-center">
                       {isEnabled && (
                         <>
                           {canManageDataSources && (
                             <Button 
                               variant="ghost" 
                               size="sm"
-                              className="h-8 text-primary hover:text-primary hover:bg-primary/10"
+                              className="h-8 text-primary hover:text-primary hover:bg-primary/10 whitespace-nowrap"
                               onClick={() => {
                                 setMappingTable(tableName);
                                 setMappingColumns(columns);
@@ -261,13 +351,13 @@ export default function DataSourceDetailPage({ params }: { params: Promise<{ id:
                             <Button 
                               variant="ghost" 
                               size="sm"
-                              className="h-8 text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50"
+                              className="h-8 text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 whitespace-nowrap hidden sm:inline-flex"
                               onClick={() => {
                                 setExplorerTable(tableName);
                                 setExplorerOpen(true);
                               }}
                             >
-                              Data Explorer
+                              Explorer
                             </Button>
                           )}
                         </>

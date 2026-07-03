@@ -13,6 +13,7 @@ import {
   Package2,
   TableProperties,
   FileText,
+  Database,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -45,6 +46,7 @@ export default function DashboardLayout({
     { href: '/dashboard/data-sources', label: 'Data Sources',    icon: Package,         exact: false },
     { href: '/dashboard/data-explorer',label: 'Data Explorer',   icon: TableProperties, exact: false },
     { href: '/dashboard/reports',      label: 'AI Reports',      icon: FileText,        exact: false },
+    { href: '/dashboard/golden-schemas',label: 'Golden Schemas',  icon: Database,        exact: false },
     { href: '/dashboard/templates',    label: 'Templates',       icon: Package2,        exact: false },
     { href: '/dashboard/settings',     label: 'Team Settings',   icon: Users,           exact: false },
   ];

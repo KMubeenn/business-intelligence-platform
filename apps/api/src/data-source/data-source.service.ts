@@ -104,6 +104,21 @@ export class DataSourceService {
         data: { schemaJson: schema },
       });
 
+      // Cleanup orphaned tables that no longer exist in the new schema
+      const existingRawTables = await this.prisma.rawTable.findMany({
+        where: { dataSourceId: dataSource.id }
+      });
+
+      const orphanedTableIds = existingRawTables
+        .filter(rt => !tables.includes(rt.tableName))
+        .map(rt => rt.id);
+
+      if (orphanedTableIds.length > 0) {
+        await this.prisma.rawTable.deleteMany({
+          where: { id: { in: orphanedTableIds } }
+        });
+      }
+
       return updatedDataSource;
     } catch (error: unknown) {
       throw new BadRequestException(
@@ -170,6 +185,37 @@ export class DataSourceService {
     });
 
     return { success: true };
+  }
+
+  async updatePrimaryKey(id: string, organizationId: string, tableName: string, primaryKeyColumn: string | null) {
+    const dataSource = await this.findOne(id, organizationId);
+    
+    const existing = await this.prisma.rawTable.findFirst({
+      where: { dataSourceId: dataSource.id, tableName },
+    });
+
+    if (!existing) {
+      throw new NotFoundException(`Table ${tableName} not found`);
+    }
+
+    const updated = await this.prisma.rawTable.update({
+      where: { id: existing.id },
+      data: { primaryKeyColumn },
+    });
+    
+    // Wipe existing records because changing the PK means old records have the wrong externalId 
+    // and would become orphaned duplicates alongside the new ones.
+    await this.prisma.rawRecord.deleteMany({
+      where: { rawTableId: existing.id },
+    });
+
+    // Clear lastSyncTimestamp to trigger an immediate sync with the new PK
+    await this.prisma.rawTable.update({
+      where: { id: existing.id },
+      data: { lastSyncTimestamp: null },
+    });
+
+    return updated;
   }
 
   async getRawRecords(id: string, organizationId: string, tableName: string) {

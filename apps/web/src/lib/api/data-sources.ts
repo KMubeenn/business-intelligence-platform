@@ -22,9 +22,19 @@ export async function uploadExcelDataSource(file: File, name: string) {
   formData.append("file", file);
   if (name) formData.append("name", name);
 
-  // Using native fetch for FormData to avoid Axios boundary issues sometimes, 
-  // or we can use axios but ensure headers are correct. Axios handles FormData nicely!
   const { data } = await api.post('/data-sources/upload-excel', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    }
+  });
+  return data;
+}
+
+export async function updateExcelDataSource(id: string, file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const { data } = await api.put(`/data-sources/${id}/upload-excel`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     }
@@ -64,6 +74,11 @@ export async function enableTableSync(id: string, tableName: string) {
 
 export async function disableTableSync(id: string, tableName: string) {
   const { data } = await api.delete(`/data-sources/${id}/tables/${tableName}`);
+  return data;
+}
+
+export async function updateTablePrimaryKey(id: string, tableName: string, primaryKeyColumn: string | null) {
+  const { data } = await api.put(`/data-sources/${id}/tables/${tableName}/primary-key`, { primaryKeyColumn });
   return data;
 }
 

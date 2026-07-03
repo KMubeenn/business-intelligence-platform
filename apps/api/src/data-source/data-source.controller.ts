@@ -48,7 +48,6 @@ export class DataSourceController {
       throw new BadRequestException('No Excel file uploaded');
     }
 
-    // Pass the local file path to the config
     const dto: CreateDataSourceDto = {
       name: name || file.originalname,
       type: 'EXCEL' as any,
@@ -56,6 +55,41 @@ export class DataSourceController {
     };
 
     return this.dataSourceService.create(dto, req.user.organizationId);
+  }
+
+  @Put(':id/upload-excel')
+  @Roles('OWNER', 'ADMIN')
+  @UseInterceptors(FileInterceptor('file', {
+    storage: diskStorage({
+      destination: './uploads',
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        cb(null, `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`);
+      },
+    }),
+  }))
+  async updateExcel(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Request() req: { user: { organizationId: string } },
+  ) {
+    if (!file) {
+      throw new BadRequestException('No Excel file uploaded');
+    }
+
+    const dto: UpdateDataSourceDto = {
+      configurationJson: { filePath: file.path },
+    };
+
+    const updated = await this.dataSourceService.update(id, dto, req.user.organizationId);
+
+    // Reset sync timestamps so the background worker picks up the new file immediately
+    await this.dataSourceService['prisma'].rawTable.updateMany({
+      where: { dataSourceId: id },
+      data: { lastSyncTimestamp: null }
+    });
+
+    return updated;
   }
 
   @Post()
@@ -162,6 +196,17 @@ export class DataSourceController {
     @Request() req: { user: { organizationId: string } },
   ) {
     return this.dataSourceService.disableTableSync(id, req.user.organizationId, tableName);
+  }
+
+  @Put(':id/tables/:tableName/primary-key')
+  @Roles('OWNER', 'ADMIN')
+  updatePrimaryKey(
+    @Param('id') id: string,
+    @Param('tableName') tableName: string,
+    @Body('primaryKeyColumn') primaryKeyColumn: string | null,
+    @Request() req: { user: { organizationId: string } },
+  ) {
+    return this.dataSourceService.updatePrimaryKey(id, req.user.organizationId, tableName, primaryKeyColumn);
   }
 
   @Get(':id/tables/:tableName/records')
