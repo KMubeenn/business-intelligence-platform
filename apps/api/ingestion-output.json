@@ -1,0 +1,985 @@
+[
+  {
+    "datasetId": "cadcf206-95ed-4ac9-a4c0-264941b9ddcc",
+    "source": "excel",
+    "sourceFile": "7.xls",
+    "sheet": "Recovered_Sheet1",
+    "datasetName": "ITEM WISE CONSOLIDATED SALE'S REPORT",
+    "schema": {
+      "columns": [
+        {
+          "name": "Category",
+          "normalizedName": "category",
+          "type": "string",
+          "primaryDimension": true
+        },
+        {
+          "name": "Subcategory",
+          "normalizedName": "subcategory",
+          "type": "string",
+          "primaryDimension": true
+        },
+        {
+          "name": "Item Description",
+          "normalizedName": "item_description",
+          "type": "string",
+          "primaryDimension": true
+        },
+        {
+          "name": "Sale",
+          "normalizedName": "sale",
+          "type": "number",
+          "primaryDimension": false
+        },
+        {
+          "name": "S.Return",
+          "normalizedName": "s_return",
+          "type": "number",
+          "primaryDimension": false
+        },
+        {
+          "name": "NQty",
+          "normalizedName": "nqty",
+          "type": "number",
+          "primaryDimension": false
+        },
+        {
+          "name": "Rate",
+          "normalizedName": "rate",
+          "type": "number",
+          "primaryDimension": false
+        },
+        {
+          "name": "Amount",
+          "normalizedName": "amount",
+          "type": "number",
+          "primaryDimension": false
+        }
+      ]
+    },
+    "rows": [
+      {
+        "Category": "BAR",
+        "Subcategory": "BAR ADD ON",
+        "Item Description": "7UP 1.5LTR",
+        "Sale": 6,
+        "S.Return": 0,
+        "NQty": 3,
+        "Rate": 0,
+        "Amount": 0
+      },
+      {
+        "Category": "BAR",
+        "Subcategory": "SOFT DRINK",
+        "Item Description": "PEPSI 1.5LTR",
+        "Sale": 12,
+        "S.Return": 0,
+        "NQty": 6,
+        "Rate": 0,
+        "Amount": 0
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "BEVERAGES",
+        "Item Description": "NEXT COLA - 1.5LTR",
+        "Sale": 2,
+        "S.Return": 0,
+        "NQty": 1,
+        "Rate": 0,
+        "Amount": 0
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "BEVERAGES",
+        "Item Description": "NEXT COLA - 300ML",
+        "Sale": 78,
+        "S.Return": 0,
+        "NQty": 39,
+        "Rate": 141.4,
+        "Amount": 11026
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "BEVERAGES",
+        "Item Description": "NEXT COLA FIZUP - 1.5LTR",
+        "Sale": 2,
+        "S.Return": 0,
+        "NQty": 1,
+        "Rate": 0,
+        "Amount": 0
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "BEVERAGES",
+        "Item Description": "NEXT COLA FIZUP - 300ML",
+        "Sale": 2,
+        "S.Return": 0,
+        "NQty": 1,
+        "Rate": 149,
+        "Amount": 298
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "BURGER DRINKS",
+        "Item Description": "B-7UP",
+        "Sale": 76,
+        "S.Return": 0,
+        "NQty": 38,
+        "Rate": 174,
+        "Amount": 13224
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "BURGER DRINKS",
+        "Item Description": "B-7UP ZERO",
+        "Sale": 24,
+        "S.Return": 0,
+        "NQty": 12,
+        "Rate": 174,
+        "Amount": 4176
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "BURGER DRINKS",
+        "Item Description": "B-DEW",
+        "Sale": 4,
+        "S.Return": 0,
+        "NQty": 2,
+        "Rate": 174,
+        "Amount": 696
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "BURGER DRINKS",
+        "Item Description": "B-MIRINDA",
+        "Sale": 38,
+        "S.Return": 0,
+        "NQty": 19,
+        "Rate": 158.3,
+        "Amount": 6014
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "BURGER DRINKS",
+        "Item Description": "B-PEPSI",
+        "Sale": 260,
+        "S.Return": 0,
+        "NQty": 130,
+        "Rate": 174.4,
+        "Amount": 45340
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "BURGER DRINKS",
+        "Item Description": "B-PESPSI DIET",
+        "Sale": 12,
+        "S.Return": 0,
+        "NQty": 6,
+        "Rate": 174,
+        "Amount": 2088
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "BURGER DRINKS",
+        "Item Description": "NO THANKS",
+        "Sale": 780,
+        "S.Return": 0,
+        "NQty": 390,
+        "Rate": 0,
+        "Amount": 0
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "DESSERTS",
+        "Item Description": "CHOCOLATE AMIGOS",
+        "Sale": 6,
+        "S.Return": 0,
+        "NQty": 3,
+        "Rate": 797,
+        "Amount": 4782
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "DESSERTS",
+        "Item Description": "LOTUS AMIGOS",
+        "Sale": 58,
+        "S.Return": 0,
+        "NQty": 29,
+        "Rate": 797,
+        "Amount": 46226
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "HOT BEVERAGES",
+        "Item Description": "GREEN TEA",
+        "Sale": 10,
+        "S.Return": 0,
+        "NQty": 5,
+        "Rate": 249,
+        "Amount": 2490
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "HOT BEVERAGES",
+        "Item Description": "MIX TEA",
+        "Sale": 8,
+        "S.Return": 0,
+        "NQty": 4,
+        "Rate": 299,
+        "Amount": 2392
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "SHAKES",
+        "Item Description": "CHOCOLATE SHAKE",
+        "Sale": 20,
+        "S.Return": 0,
+        "NQty": 10,
+        "Rate": 549,
+        "Amount": 10980
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "SHAKES",
+        "Item Description": "LOTUS SHAKE",
+        "Sale": 34,
+        "S.Return": 0,
+        "NQty": 17,
+        "Rate": 649,
+        "Amount": 22066
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "SHAKES",
+        "Item Description": "OREO SHAKE",
+        "Sale": 12,
+        "S.Return": 0,
+        "NQty": 6,
+        "Rate": 549,
+        "Amount": 6588
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "SHAKES",
+        "Item Description": "PENUT BUTTER SHAKE",
+        "Sale": 20,
+        "S.Return": 0,
+        "NQty": 10,
+        "Rate": 599,
+        "Amount": 11980
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "SOFT DRINK",
+        "Item Description": "7UP",
+        "Sale": 72,
+        "S.Return": 0,
+        "NQty": 36,
+        "Rate": 82.8,
+        "Amount": 5960
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "SOFT DRINK",
+        "Item Description": "7UP ZERO",
+        "Sale": 14,
+        "S.Return": 0,
+        "NQty": 7,
+        "Rate": 149,
+        "Amount": 2086
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "SOFT DRINK",
+        "Item Description": "DIET PEPSI",
+        "Sale": 4,
+        "S.Return": 0,
+        "NQty": 2,
+        "Rate": 149,
+        "Amount": 596
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "SOFT DRINK",
+        "Item Description": "FRESH LIME",
+        "Sale": 34,
+        "S.Return": 0,
+        "NQty": 17,
+        "Rate": 199,
+        "Amount": 6766
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "SOFT DRINK",
+        "Item Description": "PEPSI",
+        "Sale": 76,
+        "S.Return": 0,
+        "NQty": 38,
+        "Rate": 58.8,
+        "Amount": 4470
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "SOFT DRINK",
+        "Item Description": "WATER (LARGE)",
+        "Sale": 24,
+        "S.Return": 0,
+        "NQty": 12,
+        "Rate": 149,
+        "Amount": 3576
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "SOFT DRINK",
+        "Item Description": "WATER (SMALL)",
+        "Sale": 150,
+        "S.Return": 0,
+        "NQty": 75,
+        "Rate": 79,
+        "Amount": 11850
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "SPECIAL DRINK",
+        "Item Description": "APPLE JUICE",
+        "Sale": 8,
+        "S.Return": 0,
+        "NQty": 4,
+        "Rate": 399,
+        "Amount": 3192
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "SPECIAL DRINK",
+        "Item Description": "APPLE MARGARITA",
+        "Sale": 4,
+        "S.Return": 0,
+        "NQty": 2,
+        "Rate": 349,
+        "Amount": 1396
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "SPECIAL DRINK",
+        "Item Description": "FALSA MARGARITA",
+        "Sale": 10,
+        "S.Return": 0,
+        "NQty": 5,
+        "Rate": 349,
+        "Amount": 3490
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "SPECIAL DRINK",
+        "Item Description": "MINT MARGARITA",
+        "Sale": 180,
+        "S.Return": 0,
+        "NQty": 90,
+        "Rate": 349,
+        "Amount": 62820
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "SPECIAL DRINK",
+        "Item Description": "MIX FRUIT SMOOTHIE",
+        "Sale": 2,
+        "S.Return": 0,
+        "NQty": 1,
+        "Rate": 599,
+        "Amount": 1198
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "SPECIAL DRINK",
+        "Item Description": "PEACH JUICE",
+        "Sale": 24,
+        "S.Return": 0,
+        "NQty": 12,
+        "Rate": 399,
+        "Amount": 9576
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "SPECIAL DRINK",
+        "Item Description": "PEACH MARGARITA",
+        "Sale": 16,
+        "S.Return": 0,
+        "NQty": 8,
+        "Rate": 349,
+        "Amount": 5584
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "SPECIAL DRINK",
+        "Item Description": "PINACOLADA",
+        "Sale": 6,
+        "S.Return": 0,
+        "NQty": 3,
+        "Rate": 399,
+        "Amount": 2394
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "SPECIAL DRINK",
+        "Item Description": "WATERMELON JUICE",
+        "Sale": 24,
+        "S.Return": 0,
+        "NQty": 12,
+        "Rate": 399,
+        "Amount": 9576
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "SPECIAL DRINK",
+        "Item Description": "WATERMELON MARGARITA",
+        "Sale": 8,
+        "S.Return": 0,
+        "NQty": 4,
+        "Rate": 349,
+        "Amount": 2792
+      },
+      {
+        "Category": "BAR HD",
+        "Subcategory": "SPECIAL DRINK",
+        "Item Description": "ZIPPY LEMONADE",
+        "Sale": 24,
+        "S.Return": 0,
+        "NQty": 12,
+        "Rate": 249,
+        "Amount": 5976
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "ADD ON SAUCE",
+        "Item Description": "CREAMY CHIPOTLE SAUCE",
+        "Sale": 76,
+        "S.Return": 0,
+        "NQty": 38,
+        "Rate": 0,
+        "Amount": 0.1
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "ADD ON SAUCE",
+        "Item Description": "CREAMY CHIPOTTLE  DIP",
+        "Sale": 12,
+        "S.Return": 0,
+        "NQty": 6,
+        "Rate": 199,
+        "Amount": 2388
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "ADD ON SAUCE",
+        "Item Description": "EXTRA CHEESE SLICE",
+        "Sale": 4,
+        "S.Return": 0,
+        "NQty": 2,
+        "Rate": 99,
+        "Amount": 396
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "ADD ON SAUCE",
+        "Item Description": "EXTRA MASH POTATOES",
+        "Sale": 2,
+        "S.Return": 0,
+        "NQty": 1,
+        "Rate": 59,
+        "Amount": 118
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "ADD ON SAUCE",
+        "Item Description": "EXTRA VEGGI",
+        "Sale": 4,
+        "S.Return": 0,
+        "NQty": 2,
+        "Rate": 120,
+        "Amount": 480
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "ADD ON SAUCE",
+        "Item Description": "GARLIC MAYO DIP",
+        "Sale": 4,
+        "S.Return": 0,
+        "NQty": 2,
+        "Rate": 150,
+        "Amount": 600
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "ADD ON SAUCE",
+        "Item Description": "PLAIN FRIES BUCKET",
+        "Sale": 58,
+        "S.Return": 0,
+        "NQty": 29,
+        "Rate": 423.1,
+        "Amount": 24542
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "ADD ON SAUCE",
+        "Item Description": "TANGI SAUCE",
+        "Sale": 94,
+        "S.Return": 0,
+        "NQty": 47,
+        "Rate": 0,
+        "Amount": 0.1
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "ADD ONS MEAT",
+        "Item Description": "CRUNCHY BURGER",
+        "Sale": 170,
+        "S.Return": 0,
+        "NQty": 85,
+        "Rate": 315.9,
+        "Amount": 53700
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "ADD ONS MEAT",
+        "Item Description": "EXTRA BEEF PATTY SMALL",
+        "Sale": 4,
+        "S.Return": 0,
+        "NQty": 2,
+        "Rate": 250,
+        "Amount": 1000
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "ADD ONS MEAT",
+        "Item Description": "EXTRA MUTTON PATIE",
+        "Sale": 4,
+        "S.Return": 0,
+        "NQty": 2,
+        "Rate": 299,
+        "Amount": 1196
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "ADD ONS MEAT",
+        "Item Description": "EXTRA PASTA",
+        "Sale": 2,
+        "S.Return": 0,
+        "NQty": 1,
+        "Rate": 150,
+        "Amount": 300
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "BEEF BURGERS",
+        "Item Description": "SON OF A BUN",
+        "Sale": 178,
+        "S.Return": 0,
+        "NQty": 89,
+        "Rate": 1099,
+        "Amount": 195622
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "CHICKEN BURGERS",
+        "Item Description": "CRISPY BAE",
+        "Sale": 58,
+        "S.Return": 0,
+        "NQty": 29,
+        "Rate": 833,
+        "Amount": 48312
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "CHICKEN BURGERS",
+        "Item Description": "GO WILD",
+        "Sale": 34,
+        "S.Return": 0,
+        "NQty": 17,
+        "Rate": 1099,
+        "Amount": 37366
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "CHICKEN BURGERS",
+        "Item Description": "LIL BUCKAROO",
+        "Sale": 6,
+        "S.Return": 0,
+        "NQty": 3,
+        "Rate": 499,
+        "Amount": 2994
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "CHICKEN BURGERS",
+        "Item Description": "NUGGETS",
+        "Sale": 22,
+        "S.Return": 0,
+        "NQty": 11,
+        "Rate": 400,
+        "Amount": 8800
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "CHICKEN BURGERS",
+        "Item Description": "RANGO TANGO",
+        "Sale": 58,
+        "S.Return": 0,
+        "NQty": 29,
+        "Rate": 801,
+        "Amount": 46456
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "CHICKEN BURGERS",
+        "Item Description": "STAY MILD",
+        "Sale": 32,
+        "S.Return": 0,
+        "NQty": 16,
+        "Rate": 1099,
+        "Amount": 35168
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "CHICKEN BURGERS",
+        "Item Description": "STINGER",
+        "Sale": 56,
+        "S.Return": 0,
+        "NQty": 28,
+        "Rate": 847,
+        "Amount": 47432
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "CHICKEN BURGERS",
+        "Item Description": "WRANGLER",
+        "Sale": 28,
+        "S.Return": 0,
+        "NQty": 14,
+        "Rate": 730,
+        "Amount": 20440
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "CHICKEN BURGERS",
+        "Item Description": "YAY CHHEESE",
+        "Sale": 36,
+        "S.Return": 0,
+        "NQty": 18,
+        "Rate": 899,
+        "Amount": 32364
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "CHICKEN STEAKS",
+        "Item Description": "DESPERADO STEAK",
+        "Sale": 64,
+        "S.Return": 0,
+        "NQty": 32,
+        "Rate": 1597,
+        "Amount": 102208
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "CHICKEN STEAKS",
+        "Item Description": "GUNSLINGER",
+        "Sale": 18,
+        "S.Return": 0,
+        "NQty": 9,
+        "Rate": 1597,
+        "Amount": 28746
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "CHICKEN STEAKS",
+        "Item Description": "ITIALIANO STEAK",
+        "Sale": 58,
+        "S.Return": 0,
+        "NQty": 29,
+        "Rate": 1597,
+        "Amount": 92626
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "CHICKEN STEAKS",
+        "Item Description": "MEXICANO STEAK",
+        "Sale": 22,
+        "S.Return": 0,
+        "NQty": 11,
+        "Rate": 1597,
+        "Amount": 35134
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "CHICKEN STEAKS",
+        "Item Description": "MOROCCANO STEAK",
+        "Sale": 48,
+        "S.Return": 0,
+        "NQty": 24,
+        "Rate": 1597,
+        "Amount": 76656
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "CHICKEN STEAKS",
+        "Item Description": "STEAK FRIES",
+        "Sale": 34,
+        "S.Return": 0,
+        "NQty": 17,
+        "Rate": 150,
+        "Amount": 5100
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "CHICKEN STEAKS",
+        "Item Description": "TEXAN STEAK",
+        "Sale": 148,
+        "S.Return": 0,
+        "NQty": 74,
+        "Rate": 1597,
+        "Amount": 236356
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "CUKAROO BUCKAROO",
+        "Item Description": "FULL CHICKEN",
+        "Sale": 6,
+        "S.Return": 0,
+        "NQty": 3,
+        "Rate": 2497,
+        "Amount": 14982
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "CUKAROO BUCKAROO",
+        "Item Description": "HALF CHICKEN",
+        "Sale": 28,
+        "S.Return": 0,
+        "NQty": 14,
+        "Rate": 1497,
+        "Amount": 41916
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "FRIES",
+        "Item Description": "COUNTRY COWBOY FRIES",
+        "Sale": 10,
+        "S.Return": 0,
+        "NQty": 5,
+        "Rate": 399,
+        "Amount": 3990
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "FRIES",
+        "Item Description": "COWGIRL MASALA FRIES",
+        "Sale": 2,
+        "S.Return": 0,
+        "NQty": 1,
+        "Rate": 449,
+        "Amount": 898
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "FRIES",
+        "Item Description": "CURLY FRIES BUCKET",
+        "Sale": 114,
+        "S.Return": 0,
+        "NQty": 57,
+        "Rate": 499,
+        "Amount": 56886
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "FRIES",
+        "Item Description": "FRIES (B)",
+        "Sale": 358,
+        "S.Return": 0,
+        "NQty": 179,
+        "Rate": 171.2,
+        "Amount": 61296
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "FRIES",
+        "Item Description": "GARLIC MAYO FRIES",
+        "Sale": 18,
+        "S.Return": 0,
+        "NQty": 9,
+        "Rate": 399,
+        "Amount": 7182
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "FRIES",
+        "Item Description": "LOADED FRIES",
+        "Sale": 82,
+        "S.Return": 0,
+        "NQty": 41,
+        "Rate": 1099,
+        "Amount": 90118
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "MUTTON BURGERS",
+        "Item Description": "MUTTON JALAPENO",
+        "Sale": 62,
+        "S.Return": 0,
+        "NQty": 31,
+        "Rate": 1299,
+        "Amount": 80538
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "MUTTON BURGERS",
+        "Item Description": "MUTTON SPINACH",
+        "Sale": 28,
+        "S.Return": 0,
+        "NQty": 14,
+        "Rate": 1299,
+        "Amount": 36372
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "SMASHERS",
+        "Item Description": "THE BASHER",
+        "Sale": 32,
+        "S.Return": 0,
+        "NQty": 16,
+        "Rate": 1099,
+        "Amount": 35168
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "SMASHERS",
+        "Item Description": "THE CRASHER",
+        "Sale": 34,
+        "S.Return": 0,
+        "NQty": 17,
+        "Rate": 1099,
+        "Amount": 37366
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "SMASHERS",
+        "Item Description": "THE DASHER",
+        "Sale": 20,
+        "S.Return": 0,
+        "NQty": 10,
+        "Rate": 1099,
+        "Amount": 21980
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "SMASHERS",
+        "Item Description": "THE MASHER",
+        "Sale": 32,
+        "S.Return": 0,
+        "NQty": 16,
+        "Rate": 1099,
+        "Amount": 35168
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "STARTER",
+        "Item Description": "BUCKSHOTS",
+        "Sale": 24,
+        "S.Return": 0,
+        "NQty": 12,
+        "Rate": 799,
+        "Amount": 19176
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "WINGS",
+        "Item Description": "KICK OF A CHICK - FRIED",
+        "Sale": 2,
+        "S.Return": 0,
+        "NQty": 1,
+        "Rate": 947,
+        "Amount": 1894
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "WINGS",
+        "Item Description": "LORD OF THE WINGS - FRIED",
+        "Sale": 14,
+        "S.Return": 0,
+        "NQty": 7,
+        "Rate": 947,
+        "Amount": 13258
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "WINGS",
+        "Item Description": "WILD CHICK (FRIED)",
+        "Sale": 42,
+        "S.Return": 0,
+        "NQty": 21,
+        "Rate": 947,
+        "Amount": 39774
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "WINGS",
+        "Item Description": "WILD CHICK FRIED - (DEAL)",
+        "Sale": 14,
+        "S.Return": 0,
+        "NQty": 7,
+        "Rate": 500,
+        "Amount": 7000
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "WINGS",
+        "Item Description": "WINGKING - FRIED",
+        "Sale": 2,
+        "S.Return": 0,
+        "NQty": 1,
+        "Rate": 947,
+        "Amount": 1894
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "WINGS",
+        "Item Description": "WOOKIE CHOOKIE - FRIED",
+        "Sale": 2,
+        "S.Return": 0,
+        "NQty": 1,
+        "Rate": 947,
+        "Amount": 1894
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "WRAPS",
+        "Item Description": "MONSTA WRAP - CHIPOTLE",
+        "Sale": 22,
+        "S.Return": 0,
+        "NQty": 11,
+        "Rate": 799,
+        "Amount": 17578
+      },
+      {
+        "Category": "KITCHEN",
+        "Subcategory": "WRAPS",
+        "Item Description": "MONSTA WRAP - MOROCCAN",
+        "Sale": 6,
+        "S.Return": 0,
+        "NQty": 3,
+        "Rate": 799,
+        "Amount": 4794
+      }
+    ],
+    "metadata": {
+      "notes": [
+        "FROM : 17/05/2025 TO: 17/05/2025 ()"
+      ]
+    },
+    "quality": {
+      "warnings": [
+        "Row 13 appears to be a summary-like placeholder entry."
+      ],
+      "correctionsApplied": []
+    },
+    "confidence": 0.9
+  }
+]
