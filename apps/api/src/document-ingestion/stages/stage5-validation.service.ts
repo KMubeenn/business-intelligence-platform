@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { generateWithFallbacks } from '../../utils/ai-generator.util';
 import { IExtractionResult } from '../models/extraction-result.model';
 import { GoogleGenAI } from '@google/genai';
 import { DATA_QUALITY_REVIEW_PROMPT } from '../prompts/data-quality-review.prompt';
@@ -44,14 +45,15 @@ ${JSON.stringify(sample)}`;
 
     try {
       this.logger.log('Running AI Quality Review...');
-      const response = await this.ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: { temperature: 0.1 }
-      });
-
-      let text = response.text || '{}';
+      let text = await generateWithFallbacks(prompt, true);
       text = text.replace(/```(?:json)?\s*([\s\S]*?)```/g, '$1').trim();
+
+      const firstBrace = text.indexOf('{');
+      const lastBrace = text.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace !== -1) {
+        text = text.substring(firstBrace, lastBrace + 1);
+      }
+
       const qualityReview = JSON.parse(text);
 
       if (qualityReview.warnings && Array.isArray(qualityReview.warnings)) {

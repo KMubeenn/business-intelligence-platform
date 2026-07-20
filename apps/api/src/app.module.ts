@@ -17,6 +17,8 @@ import { ReportsModule } from './reports/reports.module';
 import { ReportTemplatesModule } from './report-templates/report-templates.module';
 import { BullModule } from '@nestjs/bullmq';
 
+import { AdHocReportsModule } from './ad-hoc-reports/ad-hoc-reports.module';
+
 @Module({
   imports: [
     BullModule.forRoot({
@@ -25,7 +27,7 @@ import { BullModule } from '@nestjs/bullmq';
         port: parseInt(process.env.REDIS_PORT || '6379', 10),
       },
     }),
-    ScheduleModule.forRoot(), PrismaModule, AuthModule, DataSourceModule, ConnectorsModule, SyncModule, TransformationModule, CanonicalModelModule, AnalyticsModule, MockApiModule, ReportsModule, TeamModule, ReportTemplatesModule
+    ScheduleModule.forRoot(), PrismaModule, AuthModule, DataSourceModule, ConnectorsModule, SyncModule, TransformationModule, CanonicalModelModule, AnalyticsModule, MockApiModule, ReportsModule, TeamModule, ReportTemplatesModule, AdHocReportsModule
   ],
   controllers: [AppController],
   providers: [AppService],

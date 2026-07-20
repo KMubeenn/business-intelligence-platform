@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { generateWithFallbacks } from '../../utils/ai-generator.util';
 import { GoogleGenAI } from '@google/genai';
 import { ISerializedLayout } from '../models/cell-layout.model';
 import { IExtractionResult } from '../models/extraction-result.model';
@@ -22,17 +23,15 @@ ${JSON.stringify(layout)}`;
     try {
       this.logger.log(`Sending layout ${layout.sheet} to AI for extraction...`);
       
-      const response = await this.ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: {
-          temperature: 0.1,
-        }
-      });
-
-      let text = response.text || '{}';
+      let text = await generateWithFallbacks(prompt, true);
       text = text.replace(/```(?:json)?\s*([\s\S]*?)```/g, '$1').trim();
       
+      const firstBrace = text.indexOf('{');
+      const lastBrace = text.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace !== -1) {
+        text = text.substring(firstBrace, lastBrace + 1);
+      }
+
       const parsed = JSON.parse(text) as IExtractionResult;
       
       // Basic fallback initialization

@@ -47,6 +47,7 @@ export default function DashboardLayout({
     { href: '/dashboard/data-explorer',label: 'Data Explorer',   icon: TableProperties, exact: false },
     { href: '/dashboard/reports',      label: 'AI Reports',      icon: FileText,        exact: false },
     { href: '/dashboard/golden-schemas',label: 'Golden Schemas',  icon: Database,        exact: false },
+    { href: '/dashboard/ad-hoc-test',  label: 'Ad-Hoc Testing',  icon: Search,          exact: false },
     { href: '/dashboard/templates',    label: 'Templates',       icon: Package2,        exact: false },
     { href: '/dashboard/settings',     label: 'Team Settings',   icon: Users,           exact: false },
   ];

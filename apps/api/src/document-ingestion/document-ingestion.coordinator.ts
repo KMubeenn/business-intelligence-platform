@@ -51,8 +51,8 @@ export class DocumentIngestionCoordinator {
       const validationResult = await this.validator.validate(extracted);
 
       if (!validationResult.isValid) {
-        this.logger.warn(`Validation failed for region in ${filePath}. Warnings: ${validationResult.warnings.join(', ')}`);
-        throw new Error(`Dataset validation failed: ${validationResult.warnings.join(', ')}`);
+        this.logger.warn(`Validation quality score low for region in ${filePath}. Warnings: ${validationResult.warnings.join(', ')}`);
+        // We will no longer throw an error here. We want to pass these discrepancies to the final report!
       }
 
       // Stage 6: Universal Dataset Generation
