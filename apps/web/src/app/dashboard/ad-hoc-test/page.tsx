@@ -12,7 +12,7 @@ interface FileInfo {
 export default function AdHocTestPage() {
   // State
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [folderPath, setFolderPath] = useState('C:\\\\DevProjects\\\\business-intelligence-platform');
+  const [folderPath, setFolderPath] = useState('');
   const [availableFiles, setAvailableFiles] = useState<FileInfo[]>([]);
   const [selectedFilePaths, setSelectedFilePaths] = useState<Set<string>>(new Set());
   const [userQuery, setUserQuery] = useState('Generate a comprehensive executive summary based strictly on the data available in the selected files.\n\n1. Combine the data to formulate high-level business insights and KPIs.\n2. Create dedicated, deeply analyzed sections for each distinct file provided (e.g., if a "Staff Sales" file is selected, generate a "Staff Sales Analysis" section; if a "Howdy F7" file is selected, generate a "Howdy F7 Insights" section).\n3. Ensure all files are thoroughly respected, cross-referenced, and reported on accurately.');

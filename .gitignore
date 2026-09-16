@@ -6,3 +6,22 @@ coverage
 *.log
 *.xlsx
 *.xls
+# Local scratch / debug scripts (kept on disk, not published)
+apps/api/check-*.ts
+apps/api/test-*.ts
+apps/api/seed-*.ts
+apps/api/fix-*.ts
+apps/api/debug-*.ts
+apps/api/verify-*.ts
+apps/api/migrate-*.ts
+apps/api/final-fix.ts
+apps/api/reset-sync.ts
+apps/api/generate-excel.ts
+apps/api/list-models.ts
+apps/api/src/test-ad-hoc.ts
+apps/api/scripts/
+apps/api/ingestion-output.json
+apps/api/expected_raw.txt
+
+# Local uploads / generated output
+apps/api/uploads/
