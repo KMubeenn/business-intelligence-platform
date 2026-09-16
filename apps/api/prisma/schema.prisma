@@ -19,6 +19,7 @@ model Organization {
   reportConfigs   ReportConfig[]
   teamInvites     TeamInvite[]
   reportTemplates ReportTemplate[]
+  adHocReports    AdHocReport[]
 }
 
 enum Role {
@@ -191,4 +192,15 @@ model ReportExecution {
   pdfUrl           String?
   errorMessage     String?
   executedAt       DateTime     @default(now())
+}
+
+model AdHocReport {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  userQuery      String
+  s3Key          String
+  s3Bucket       String
+  createdAt      DateTime     @default(now())
 }

@@ -1,14 +1,16 @@
 export interface IExtractionResult {
   datasetName: string;
-  description: string;
+  description?: string;
+  headerRowIndex?: number;
+  dataStartRowIndex?: number;
   columns: Array<{
     name: string;
     type: 'string' | 'number' | 'date' | 'boolean';
     primaryDimension: boolean;
+    sourceColumnRef?: string;
   }>;
   rows: Array<Record<string, any>>;
-  metadata: {
-    notes?: string[];
-  };
-  confidence: number;
+  metadata?: any;
+  confidence?: number;
+  nextContext?: any;
 }

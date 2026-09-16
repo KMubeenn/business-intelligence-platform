@@ -13,9 +13,9 @@ export class SyncService {
     @InjectQueue('sync') private syncQueue: Queue
   ) {}
 
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  @Cron(CronExpression.EVERY_5_MINUTES)
   async handleSync() {
-    this.logger.log('Sweeping for tables to sync...');
+    this.logger.debug('Sweeping for tables to sync...');
 
     const tablesToSync = await this.prisma.rawTable.findMany({
       where: { syncEnabled: true },

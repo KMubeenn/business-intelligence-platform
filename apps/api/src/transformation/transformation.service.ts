@@ -13,9 +13,9 @@ export class TransformationService {
     @InjectQueue('transform') private transformQueue: Queue
   ) {}
 
-  @Cron("*/5 * * * * *")
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleTransformation() {
-    this.logger.log('Sweeping for unmapped records to transform...');
+    this.logger.debug('Sweeping for unmapped records to transform...');
 
     // Find all raw records that don't have a mapped canonical record
     const unmappedRecords = await this.prisma.rawRecord.findMany({
