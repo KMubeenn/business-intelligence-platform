@@ -11,15 +11,15 @@ export class AiExtractionService {
   async extract(layout: ISerializedLayout): Promise<IExtractionResult> {
     // 1. Pre-process cells into compact raw rows
     const rawRowsMap: Record<number, Record<string, any>> = {};
-    
+
     layout.cells.forEach(cell => {
       const rowMatch = cell.ref.match(/\d+/);
       const colMatch = cell.ref.match(/[A-Z]+/);
-      
+
       if (rowMatch && colMatch) {
         const rowIdx = parseInt(rowMatch[0], 10);
         const colRef = colMatch[0];
-        
+
         if (!rawRowsMap[rowIdx]) rawRowsMap[rowIdx] = {};
         rawRowsMap[rowIdx][colRef] = cell.val;
       }
@@ -31,7 +31,7 @@ export class AiExtractionService {
     // 2. Chunking configuration
     const CHUNK_SIZE = 100;
     const totalChunks = Math.ceil(compactRows.length / CHUNK_SIZE);
-    
+
     this.logger.log(`Beginning Chunked AI Extraction: ${compactRows.length} rows across ${totalChunks} chunks.`);
 
     let finalResult: IExtractionResult | null = null;
@@ -41,7 +41,7 @@ export class AiExtractionService {
     for (let i = 0; i < totalChunks; i++) {
       const chunkIndex = i + 1;
       const chunkRows = compactRows.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
-      
+
       let prompt = CHUNKED_SPREADSHEET_UNDERSTANDING_PROMPT
         .replace('{{CHUNK_INDEX}}', String(chunkIndex))
         .replace('{{TOTAL_CHUNKS}}', String(totalChunks));
@@ -53,7 +53,7 @@ export class AiExtractionService {
         this.logger.log(`Sending Chunk ${chunkIndex}/${totalChunks} to AI...`);
         let text = await generateWithFallbacks(prompt, true);
         text = text.replace(/```(?:json)?\s*([\s\S]*?)```/g, '$1').trim();
-        
+
         const firstBrace = text.indexOf('{');
         const lastBrace = text.lastIndexOf('}');
         if (firstBrace !== -1 && lastBrace !== -1) {
@@ -61,7 +61,7 @@ export class AiExtractionService {
         }
 
         const parsed = JSON.parse(text) as IExtractionResult;
-        
+
         // Save schema from the first chunk
         if (chunkIndex === 1) {
           finalResult = {

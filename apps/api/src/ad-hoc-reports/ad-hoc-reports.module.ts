@@ -10,4 +10,4 @@ import { StorageModule } from '../storage/storage.module';
   controllers: [AdHocReportsController],
   providers: [AdHocReportsService],
 })
-export class AdHocReportsModule {}
+export class AdHocReportsModule { }

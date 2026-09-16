@@ -42,14 +42,14 @@ export default function DashboardLayout({
   }
 
   const navItems = [
-    { href: '/dashboard',              label: 'Command Center',  icon: Home,            exact: true },
-    { href: '/dashboard/data-sources', label: 'Data Sources',    icon: Package,         exact: false },
-    { href: '/dashboard/data-explorer',label: 'Data Explorer',   icon: TableProperties, exact: false },
-    { href: '/dashboard/reports',      label: 'AI Reports',      icon: FileText,        exact: false },
-    { href: '/dashboard/golden-schemas',label: 'Golden Schemas',  icon: Database,        exact: false },
-    { href: '/dashboard/reports/custom',  label: 'Generative Reports',  icon: Search,          exact: false },
-    { href: '/dashboard/templates',    label: 'Templates',       icon: Package2,        exact: false },
-    { href: '/dashboard/settings',     label: 'Team Settings',   icon: Users,           exact: false },
+    { href: '/dashboard', label: 'Command Center', icon: Home, exact: true },
+    { href: '/dashboard/data-sources', label: 'Data Sources', icon: Package, exact: false },
+    { href: '/dashboard/data-explorer', label: 'Data Explorer', icon: TableProperties, exact: false },
+    { href: '/dashboard/reports', label: 'AI Reports', icon: FileText, exact: false },
+    { href: '/dashboard/golden-schemas', label: 'Golden Schemas', icon: Database, exact: false },
+    { href: '/dashboard/reports/custom', label: 'Generative Reports', icon: Search, exact: false },
+    { href: '/dashboard/templates', label: 'Templates', icon: Package2, exact: false },
+    { href: '/dashboard/settings', label: 'Team Settings', icon: Users, exact: false },
   ];
 
   return (
@@ -73,11 +73,10 @@ export default function DashboardLayout({
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-150 ${
-                      isActive
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-150 ${isActive
                         ? 'bg-primary/10 text-primary font-semibold border border-primary/20'
                         : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                    }`}
+                      }`}
                   >
                     <item.icon className="h-4 w-4" />
                     {item.label}

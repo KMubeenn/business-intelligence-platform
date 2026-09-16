@@ -6,7 +6,7 @@ import { AdHocReportsService } from './ad-hoc-reports.service';
 @Controller('reports/ad-hoc')
 @UseGuards(AuthGuard('jwt'))
 export class AdHocReportsController {
-  constructor(private readonly adHocReportsService: AdHocReportsService) {}
+  constructor(private readonly adHocReportsService: AdHocReportsService) { }
 
   @Post('generate')
   @UseInterceptors(FilesInterceptor('files', 10)) // Max 10 files
@@ -19,17 +19,17 @@ export class AdHocReportsController {
     if (!files || files.length === 0 || !userQuery) {
       throw new Error('files and userQuery are required');
     }
-    
+
     const organizationId = req.user.organizationId;
-    
+
     // Returns { id: string, pdfBase64: '...' }
     const result = await this.adHocReportsService.generateReportFromUploads(
-      files, 
+      files,
       userQuery,
       organizationId,
       templateId
     );
-    
+
     return result;
   }
 

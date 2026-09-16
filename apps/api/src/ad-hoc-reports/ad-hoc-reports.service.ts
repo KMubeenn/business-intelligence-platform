@@ -49,7 +49,7 @@ export class AdHocReportsService {
         const ext = path.extname(file.originalname) || '.xlsx';
         const safeName = `${require('crypto').randomUUID()}${ext}`;
         const tempPath = path.join(tempDirPath, safeName);
-        
+
         fs.writeFileSync(tempPath, file.buffer);
         tempFilePaths.push(tempPath);
       }
@@ -76,22 +76,22 @@ export class AdHocReportsService {
         throw new Error('Failed to extract any valid datasets from the provided files.');
       }
 
-    // 2. Construct the Data Context payload
-    let dataContext = '';
-    for (let i = 0; i < allDatasets.length; i++) {
-      const ds = allDatasets[i];
-      dataContext += `### Dataset ${i + 1}: ${ds.datasetName} (Source: ${ds.sourceFile})\n`;
-      dataContext += `Schema: ${JSON.stringify(ds.schema.columns)}\n`;
-      dataContext += `Rows:\n${JSON.stringify(ds.rows)}\n`;
-      if (ds.quality && ds.quality.warnings && ds.quality.warnings.length > 0) {
-        dataContext += `Data Quality Warnings (MUST REPORT): ${JSON.stringify(ds.quality.warnings)}\n`;
+      // 2. Construct the Data Context payload
+      let dataContext = '';
+      for (let i = 0; i < allDatasets.length; i++) {
+        const ds = allDatasets[i];
+        dataContext += `### Dataset ${i + 1}: ${ds.datasetName} (Source: ${ds.sourceFile})\n`;
+        dataContext += `Schema: ${JSON.stringify(ds.schema.columns)}\n`;
+        dataContext += `Rows:\n${JSON.stringify(ds.rows)}\n`;
+        if (ds.quality && ds.quality.warnings && ds.quality.warnings.length > 0) {
+          dataContext += `Data Quality Warnings (MUST REPORT): ${JSON.stringify(ds.quality.warnings)}\n`;
+        }
+        dataContext += `\n`;
       }
-      dataContext += `\n`;
-    }
 
-    // 3. Send to Gemini for unified HTML generation
-    this.logger.log(`Datasets aggregated. Generating HTML Report...`);
-    const prompt = `
+      // 3. Send to Gemini for unified HTML generation
+      this.logger.log(`Datasets aggregated. Generating HTML Report...`);
+      const prompt = `
 You are an elite Business Intelligence AI Analyst.
 The user wants a unified, production-grade executive report based on multiple selected data files.
 
@@ -117,35 +117,35 @@ Generate a breathtaking, highly professional HTML report that strictly adheres t
 6. All tables MUST use 'table-layout: fixed; width: 100%; word-wrap: break-word;' to ensure columns do not get cut off horizontally.
 `;
 
-    let htmlOutput = '';
-    try {
-      htmlOutput = await generateWithFallbacks(prompt, false);
-      const match = htmlOutput.match(/```(?:html)?\s*([\s\S]*?)```/);
-      if (match && match[1]) {
-        htmlOutput = match[1].trim();
-      } else {
-        htmlOutput = htmlOutput.trim();
+      let htmlOutput = '';
+      try {
+        htmlOutput = await generateWithFallbacks(prompt, false);
+        const match = htmlOutput.match(/```(?:html)?\s*([\s\S]*?)```/);
+        if (match && match[1]) {
+          htmlOutput = match[1].trim();
+        } else {
+          htmlOutput = htmlOutput.trim();
+        }
+      } catch (err: any) {
+        this.logger.error(`AI HTML Generation failed: ${err.message}`);
+        throw new Error(`AI HTML Generation failed: ${err.message}`);
       }
-    } catch (err: any) {
-      this.logger.error(`AI HTML Generation failed: ${err.message}`);
-      throw new Error(`AI HTML Generation failed: ${err.message}`);
-    }
 
-    // Prepare template layout
-    let layout: any = {
-      primaryColor: '#3b82f6',
-      header: { logoUrl: '', logoPosition: 'left', titleText: 'Generative Report', titlePosition: 'right', showDate: true },
-      footer: { disclaimerText: 'Confidential - Internal Use Only', disclaimerPosition: 'left', signatureText: 'Generated automatically', signaturePosition: 'right', showPageNumbers: false }
-    };
+      // Prepare template layout
+      let layout: any = {
+        primaryColor: '#3b82f6',
+        header: { logoUrl: '', logoPosition: 'left', titleText: 'Generative Report', titlePosition: 'right', showDate: true },
+        footer: { disclaimerText: 'Confidential - Internal Use Only', disclaimerPosition: 'left', signatureText: 'Generated automatically', signaturePosition: 'right', showPageNumbers: false }
+      };
 
-    if (templateId) {
-      const template = await this.prisma.reportTemplate.findUnique({ where: { id: templateId } });
-      if (template && template.layoutConfig) {
-        layout = template.layoutConfig as any;
+      if (templateId) {
+        const template = await this.prisma.reportTemplate.findUnique({ where: { id: templateId } });
+        if (template && template.layoutConfig) {
+          layout = template.layoutConfig as any;
+        }
       }
-    }
 
-    const printSafeHtml = `
+      const printSafeHtml = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -250,46 +250,46 @@ Generate a breathtaking, highly professional HTML report that strictly adheres t
 </html>
     `;
 
-    // 4. Convert HTML to PDF using Puppeteer
-    this.logger.log(`Converting HTML to PDF via Puppeteer...`);
-    try {
-      const browser = await puppeteer.launch({ headless: true });
-      const page = await browser.newPage();
+      // 4. Convert HTML to PDF using Puppeteer
+      this.logger.log(`Converting HTML to PDF via Puppeteer...`);
+      try {
+        const browser = await puppeteer.launch({ headless: true });
+        const page = await browser.newPage();
 
-      // Inject HTML into the page
-      await page.setContent(printSafeHtml, { waitUntil: 'domcontentloaded', timeout: 30000 });
-      
-      // Generate PDF buffer
-      const pdfBuffer = await page.pdf({
-        format: 'A4',
-        printBackground: true,
-        margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' }
-      });
-      
-      await browser.close();
-      
-      const s3Key = `ad-hoc/${organizationId}/${new Date().getTime()}-report.pdf`;
-      this.logger.log(`Ad-Hoc PDF Report generated successfully. Uploading to S3: ${s3Key}...`);
+        // Inject HTML into the page
+        await page.setContent(printSafeHtml, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
-      const s3Bucket = await this.s3.uploadPdf(s3Key, pdfBuffer);
-      this.logger.log('Saving to database...');
+        // Generate PDF buffer
+        const pdfBuffer = await page.pdf({
+          format: 'A4',
+          printBackground: true,
+          margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' }
+        });
 
-      const report = await this.prisma.adHocReport.create({
-        data: {
-          organizationId,
-          name: `Custom Report - ${new Date().toLocaleDateString()}`,
-          userQuery,
-          s3Key,
-          s3Bucket
-        }
-      });
-      
-      const pdfUrl = await this.s3.getPresignedUrl(s3Key, s3Bucket);
-      return { id: report.id, pdfUrl };
-    } catch (err: any) {
-      this.logger.error(`PDF Generation failed: ${err.message}`);
-      throw new Error(`PDF Generation failed: ${err.message}`);
-    }
+        await browser.close();
+
+        const s3Key = `ad-hoc/${organizationId}/${new Date().getTime()}-report.pdf`;
+        this.logger.log(`Ad-Hoc PDF Report generated successfully. Uploading to S3: ${s3Key}...`);
+
+        const s3Bucket = await this.s3.uploadPdf(s3Key, pdfBuffer);
+        this.logger.log('Saving to database...');
+
+        const report = await this.prisma.adHocReport.create({
+          data: {
+            organizationId,
+            name: `Custom Report - ${new Date().toLocaleDateString()}`,
+            userQuery,
+            s3Key,
+            s3Bucket
+          }
+        });
+
+        const pdfUrl = await this.s3.getPresignedUrl(s3Key, s3Bucket);
+        return { id: report.id, pdfUrl };
+      } catch (err: any) {
+        this.logger.error(`PDF Generation failed: ${err.message}`);
+        throw new Error(`PDF Generation failed: ${err.message}`);
+      }
 
     } finally {
       // Clean up the temporary directory regardless of success or failure
@@ -315,11 +315,11 @@ Generate a breathtaking, highly professional HTML report that strictly adheres t
       where: { id, organizationId },
       select: { id: true, name: true, s3Key: true, s3Bucket: true, createdAt: true, userQuery: true }
     });
-    
+
     if (!report) return null;
-    
+
     const pdfUrl = await this.s3.getPresignedUrl(report.s3Key, report.s3Bucket);
-    
+
     return {
       ...report,
       pdfUrl,
